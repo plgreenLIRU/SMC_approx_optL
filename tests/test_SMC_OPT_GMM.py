@@ -10,7 +10,8 @@ from SMC_OPT import *
 from SMC_OPT_GMM import *
 
 """
-Testing for SMC_OPT_GMM
+Estimating optL for a multi-modal toy problem, using a GMM approximate
+optimum L-kernel.
 
 P.L.Green
 """
@@ -31,24 +32,29 @@ def test_sampler():
     # Define initial proposal
     q0 = Normal_PDF(mean=0, cov=3)
 
-    # Define proposal distribution
-
     def q_mean(x_cond):
+        """ Proposal mean
+        """
         return x_cond
 
     def q_var(x_cond):
+        """ Proposal variance
+        """
         return 0.1
 
+    # Define proposal distribution
     q = Normal_PDF_Cond(D=1, mean=q_mean, cov=q_var)
 
-    # Define L-kernel for 'user-defined' implementation
-
     def L_mean(x_cond):
+        """ L-kernel mean
+        """
         return x_cond
 
     def L_var(x_cond):
-        return 0.1
+        """ L-kernel variance
+        """
 
+    # Define L-kernel for 'forward-proposal' implementation
     L = Normal_PDF_Cond(D=1, mean=L_mean, cov=L_var)
 
     # No. samples and iterations

@@ -88,7 +88,7 @@ class SMC_BASE():
 
         # Initialise arrays
         x_new = np.zeros([self.N, self.D])
-        l = np.array([])
+        lr = np.array([])
 
         # Initilise estimates of target mean and covariance matrix
         self.mean_estimate = np.zeros([self.K, self.D])
@@ -126,10 +126,10 @@ class SMC_BASE():
              self.var_estimate[self.k]) = self.estimate(x, wn)
 
             # EES recycling scheme
-            l = np.append(l, np.sum(wn)**2 / np.sum(wn**2))
+            lr = np.append(lr, np.sum(wn)**2 / np.sum(wn**2))
             lmbda = np.array([])
             for k_dash in range(self.k + 1):
-                lmbda = np.append(lmbda, l[k_dash] / np.sum(l))
+                lmbda = np.append(lmbda, lr[k_dash] / np.sum(lr))
                 self.mean_estimate_EES[self.k] += (lmbda[k_dash] *
                                                    self.mean_estimate[k_dash])
                 self.var_estimate_EES[self.k] += (lmbda[k_dash] *

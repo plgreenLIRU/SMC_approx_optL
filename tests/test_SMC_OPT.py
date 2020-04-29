@@ -7,7 +7,7 @@ from scipy.stats import multivariate_normal as Normal_PDF
 from Normal_PDF_Cond import *
 
 """
-Testing for SMC_OPT
+Testing for SMC_BASE
 
 P.L.Green
 """
@@ -20,30 +20,36 @@ p = Normal_PDF(mean=np.array([0., 0.]),
 q0 = Normal_PDF(mean=np.array([0., 0.]),
                 cov=1.1 * np.array([[1., 0.], [0., 1.]]))
 
-# Define L-kernel
-
 
 def L_mean(x_cond):
+    """ L-kernel mean
+    """
     return x_cond
 
 
 def L_var(x_cond):
+    """ L-kernel covariance matrix
+    """
     return 0.01 * np.array([[1, 0], [0, 1]])
 
 
+# Define L-kernel
 L = Normal_PDF_Cond(D=2, mean=L_mean, cov=L_var)
-
-# Define proposal distribution
 
 
 def q_mean(x_cond):
+    """ Proposal mean
+    """
     return x_cond
 
 
 def q_var(x_cond):
+    """ Proposal covariance matrix
+    """
     return 0.01 * np.array([[1, 0], [0, 1]])
 
 
+# Define proposal distribution
 q = Normal_PDF_Cond(D=2, mean=q_mean, cov=q_var)
 
 # No. samples and iterations

@@ -21,14 +21,36 @@ p = Normal_PDF(mean=np.array([3.0, 2.0]),
 q0 = Normal_PDF(mean=np.array([0, 0]),
                 cov=np.array([[1, 0], [0, 1]]))
 
+
+def L_mean(x_cond):
+    """ L-kernel mean
+    """
+    return x_cond
+
+
+def L_var(x_cond):
+    """ L-kernel covariance matrix
+    """
+    return np.array([[1, 0], [0, 1]])
+
+
 # Define L-kernel
-L_mean = lambda x_cond: x_cond
-L_var = lambda x_cond: np.array([[1, 0], [0, 1]])
 L = Normal_PDF_Cond(D=2, mean=L_mean, cov=L_var)
 
+
+def q_mean(x_cond):
+    """ Proposal mean
+    """
+    return x_cond
+
+
+def q_var(x_cond):
+    """ Proposal covariance matrix
+    """
+    return np.array([[1, 0], [0, 1]])
+
+
 # Define proposal distribution
-q_mean = lambda x_cond: x_cond
-q_var = lambda x_cond: np.array([[1, 0], [0, 1]])
 q = Normal_PDF_Cond(D=2, mean=q_mean, cov=q_var)
 
 # No. samples and iterations
@@ -82,7 +104,8 @@ fig.savefig('../notes/figures/2D_toy_problem_mean.pdf')
 # Plots of estimated elements of covariance matrix
 fig, ax = plt.subplots(nrows=3, ncols=1)
 ax[0].plot(np.repeat(1, K), 'lime', linewidth=3.0, label='True value')
-ax[0].plot(smc.var_estimate_EES[:, 0, 0], 'k', label='Forward proposal L-kernel')
+ax[0].plot(smc.var_estimate_EES[:, 0, 0], 'k',
+           label='Forward proposal L-kernel')
 ax[0].plot(smc_optL.var_estimate_EES[:, 0, 0], 'r', label='Optimum L-kernel')
 ax[0].set_xlabel('Iteration')
 ax[0].set_ylabel('Cov$[x_1, x_1]$')

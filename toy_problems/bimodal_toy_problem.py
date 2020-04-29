@@ -26,14 +26,36 @@ p = GMM_PDF(D=1,
 # Define initial proposal
 q0 = Normal_PDF(mean=0, cov=3)
 
+
+def q_mean(x_cond):
+    """ Proposal mean
+    """
+    return x_cond
+
+
+def q_var(x_cond):
+    """ Proposal variance
+    """
+    return 0.1
+
+
 # Define proposal distribution
-q_mean = lambda x_cond: x_cond
-q_var = lambda x_cond: 0.1
 q = Normal_PDF_Cond(D=1, mean=q_mean, cov=q_var)
 
+
+def L_mean(x_cond):
+    """ L-kernel mean
+    """
+    return x_cond
+
+
+def L_var(x_cond):
+    """ L-kernel variance
+    """
+    return 0.1
+
+
 # Define L-kernel for 'user-defined' implementation
-L_mean = lambda x_cond: x_cond
-L_var = lambda x_cond: 0.1
 L = Normal_PDF_Cond(D=1, mean=L_mean, cov=L_var)
 
 # No. samples and iterations
@@ -55,13 +77,13 @@ print('No. resampling (SMC optL gmm)', len(smc_opt_gmm.resampling_points))
 
 # Print variance of sample estimates
 print('\n')
-print('E[x] sample variance: ', 
-      np.var(smc.mean_estimate), 
-      np.var(smc_opt.mean_estimate), 
+print('E[x] sample variance: ',
+      np.var(smc.mean_estimate),
+      np.var(smc_opt.mean_estimate),
       np.var(smc_opt_gmm.mean_estimate))
-print('V[x] sample variance: ', 
+print('V[x] sample variance: ',
       np.var(smc.var_estimate),
-      np.var(smc_opt.var_estimate), 
+      np.var(smc_opt.var_estimate),
       np.var(smc_opt_gmm.var_estimate))
 
 # Start plots
