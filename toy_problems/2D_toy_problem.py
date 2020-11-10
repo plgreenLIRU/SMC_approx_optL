@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import sys
 sys.path.append('..')  # noqa
 from scipy.stats import multivariate_normal as Normal_PDF
-from Normal_PDF_Cond import *
 from SMC_BASE import *
 from SMC_OPT import *
 

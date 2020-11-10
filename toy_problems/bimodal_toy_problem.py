@@ -17,46 +17,45 @@ P.L.Green
 """
 
 # Define target distribution
-p = GMM_PDF(D=1,
-            means=[np.array(-3), np.array(3)],
-            vars=[np.array(1), np.array(1)],
-            weights=[0.5, 0.5],
-            n_components=2)
+p = Target()
+p.pdf = GMM_PDF(D=1,
+                means=[np.array(-3), np.array(3)],
+                vars=[np.array(1), np.array(1)],
+                weights=[0.5, 0.5],
+                n_components=2)
+def p_pdf(x):
+    return p.pdf.logpdf(x)
+p.logpdf = p_pdf    
 
 # Define initial proposal
-q0 = Normal_PDF(mean=0, cov=3)
+q0 = Q0_Proposal()
+q0.pdf = Normal_PDF(mean=0, cov=3)
+def q0_logpdf(x):
+    return q0.pdf.logpdf(x)
+def q0_rvs(size):
+    return q0.pdf.rvs(size)
+q0.logpdf = q0_logpdf
+q0.rvs = q0_rvs    
 
+# Define proposal
+q = Q_Proposal()
+q.pdf = Normal_PDF(cov=0.1)
+def q_logpdf(x, x_cond):
+    q.pdf.mean = x_cond
+    return q.pdf.logpdf(x)
+def q_rvs(x_cond):
+    q.pdf.mean = x_cond
+    return q.pdf.rvs()
+q.logpdf = q_logpdf
+q.rvs = q_rvs
 
-def q_mean(x_cond):
-    """ Proposal mean
-    """
-    return x_cond
-
-
-def q_var(x_cond):
-    """ Proposal variance
-    """
-    return 0.1
-
-
-# Define proposal distribution
-q = Normal_PDF_Cond(D=1, mean=q_mean, cov=q_var)
-
-
-def L_mean(x_cond):
-    """ L-kernel mean
-    """
-    return x_cond
-
-
-def L_var(x_cond):
-    """ L-kernel variance
-    """
-    return 0.1
-
-
-# Define L-kernel for 'user-defined' implementation
-L = Normal_PDF_Cond(D=1, mean=L_mean, cov=L_var)
+# Define L-kernel
+L = L_Kernel()
+L.pdf = Normal_PDF(cov=0.1)
+def L_logpdf(x, x_cond):
+    L.pdf.mean = x_cond
+    return L.pdf.logpdf(x)
+L.logpdf = L_logpdf
 
 # No. samples and iterations
 N = 500
@@ -110,7 +109,6 @@ ax[1].plot(smc_opt_gmm.var_estimate_EES, 'b',
 ax[1].set_xlabel('Iteration')
 ax[1].set_ylabel('Var[$x$]')
 plt.tight_layout()
-fig.savefig('../notes/figures/2_component_mean_var.pdf')
 
 # Plot of effective sample size (overview and close-up)
 fig, ax = plt.subplots(nrows=2, ncols=1)
@@ -130,6 +128,5 @@ for i in range(2):
         ax[i].set_xlim(0, 50)
     ax[i].set_ylim(0, 1)
 plt.tight_layout()
-fig.savefig('../notes/figures/2_component_Neff.pdf')
 
 plt.show()
