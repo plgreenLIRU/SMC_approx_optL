@@ -1,15 +1,47 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import copy
+from abc import abstractmethod
 
-"""
-A base class for an SMC sampler.
+class Target():
 
-P.L.Green
-"""
+    @abstractmethod
+    def logpdf(x):
+        pass
 
+class Q0_Proposal():
+    
+    @abstractmethod
+    def logpdf(x):
+        pass
+        
+    @abstractmethod
+    def rvs(size):
+        pass
+
+class Q_Proposal():
+
+    @abstractmethod
+    def logpdf(x, x_cond):
+        pass
+        
+    @abstractmethod
+    def rvs(x, x_cond):
+        pass
+        
+class L_Kernel():    
+        
+    @abstractmethod
+    def logpdf(x, x_cond):
+        pass       
 
 class SMC_BASE():
+
+    """
+    A base class for an SMC sampler.
+
+    P.L.Green
+    """
 
     def __init__(self, N, D, p, q0, K, q, L):
 

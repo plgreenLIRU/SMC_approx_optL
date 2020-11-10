@@ -14,44 +14,43 @@ P.L.Green
 """
 
 # Define target distribution
-p = Normal_PDF(mean=np.array([3.0, 2.0]),
-               cov=np.array([[1, 0], [0, 1]]))
+p = Target()
+p.pdf = Normal_PDF(mean=np.array([3.0, 2.0]),
+                   cov=np.eye(2))
+def p_pdf(x):
+    return p.pdf.logpdf(x)
+p.logpdf = p_pdf
 
 # Define initial proposal
-q0 = Normal_PDF(mean=np.array([0, 0]),
-                cov=np.array([[1, 0], [0, 1]]))
+q0 = Q0_Proposal()
+q0.pdf = Normal_PDF(mean=np.zeros(2),
+                    cov=np.eye(2))
+def q0_logpdf(x):
+    return q0.pdf.logpdf(x)
+def q0_rvs(size):
+    return q0.pdf.rvs(size)
+q0.logpdf = q0_logpdf
+q0.rvs = q0_rvs    
 
-
-def L_mean(x_cond):
-    """ L-kernel mean
-    """
-    return x_cond
-
-
-def L_var(x_cond):
-    """ L-kernel covariance matrix
-    """
-    return np.array([[1, 0], [0, 1]])
-
+# Define proposal
+q = Q_Proposal()
+q.pdf = Normal_PDF(cov=np.eye(2))
+def q_logpdf(x, x_cond):
+    q.pdf.mean = x_cond
+    return q.pdf.logpdf(x)
+def q_rvs(x_cond):
+    q.pdf.mean = x_cond
+    return q.pdf.rvs()
+q.logpdf = q_logpdf
+q.rvs = q_rvs
 
 # Define L-kernel
-L = Normal_PDF_Cond(D=2, mean=L_mean, cov=L_var)
-
-
-def q_mean(x_cond):
-    """ Proposal mean
-    """
-    return x_cond
-
-
-def q_var(x_cond):
-    """ Proposal covariance matrix
-    """
-    return np.array([[1, 0], [0, 1]])
-
-
-# Define proposal distribution
-q = Normal_PDF_Cond(D=2, mean=q_mean, cov=q_var)
+L = L_Kernel()
+L.pdf = Normal_PDF(cov=np.eye(2))
+def L_logpdf(x, x_cond):
+    L.pdf.mean = x_cond
+    return L.pdf.logpdf(x)
+L.logpdf = L_logpdf
 
 # No. samples and iterations
 N = 500
@@ -99,7 +98,6 @@ ax[1].set_xlabel('Iteration')
 ax[1].set_ylabel('E[$x_2$]')
 
 plt.tight_layout()
-fig.savefig('../notes/figures/2D_toy_problem_mean.pdf')
 
 # Plots of estimated elements of covariance matrix
 fig, ax = plt.subplots(nrows=3, ncols=1)
@@ -122,7 +120,6 @@ ax[2].set_xlabel('Iteration')
 ax[2].set_ylabel('Cov$[x_2, x_2]$')
 
 plt.tight_layout()
-fig.savefig('../notes/figures/2D_toy_problem_cov.pdf')
 
 # Plot of effective sample size (overview and close-up)
 fig, ax = plt.subplots(nrows=2, ncols=1)
@@ -139,6 +136,5 @@ for i in range(2):
         ax[i].set_xlim(0, 20)
     ax[i].set_ylim(0, 1)
 plt.tight_layout()
-fig.savefig('../notes/figures/2D_toy_problem_Neff.pdf')
 
 plt.show()
