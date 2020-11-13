@@ -12,32 +12,23 @@ Estimating the optimum L-kernel for a 2D toy problem.
 P.L.Green
 """
 
-# Define target distribution
-p = Normal_PDF(mean=np.array([3.0, 2.0]),
-               cov=np.eye(2))
+# Define target distribution 
+p = Normal_PDF(mean=np.array([3.0, 2.0]), cov=np.eye(2))
 
 # Define initial proposal
 q0 = Normal_PDF(mean=np.zeros(2), cov=np.eye(2))  
 
-# Define proposal
+# Define proposal as being Gaussian, centered on x_cond, with identity 
+# covariance matrix
 q = Q_Proposal()
-q.pdf = Normal_PDF(cov=np.eye(2))
-def q_logpdf(x, x_cond):
-    q.pdf.mean = x_cond
-    return q.pdf.logpdf(x)
-def q_rvs(x_cond):
-    q.pdf.mean = x_cond
-    return q.pdf.rvs()
-q.logpdf = q_logpdf
-q.rvs = q_rvs
+q.logpdf = lambda x, x_cond : -0.5 * (x - x_cond).T @ (x - x_cond)
+q.rvs = lambda x_cond : x_cond + np.random.randn(2)
 
-# Define L-kernel
+# Define L-kernel as being Gaussian, centered on x_cond, with identity 
+# covariance matrix
 L = L_Kernel()
-L.pdf = Normal_PDF(cov=np.eye(2))
-def L_logpdf(x, x_cond):
-    L.pdf.mean = x_cond
-    return L.pdf.logpdf(x)
-L.logpdf = L_logpdf
+L.logpdf = lambda x, x_cond : -0.5 * (x - x_cond).T @ (x - x_cond)
+L.rvs = lambda x_cond : x_cond + np.random.randn(2)
 
 # No. samples and iterations
 N = 500

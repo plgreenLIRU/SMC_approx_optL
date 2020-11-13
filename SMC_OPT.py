@@ -45,6 +45,7 @@ class SMC_OPT(SMC_BASE):
                              Sigma_X[self.D:2 * self.D, 0:self.D],
                              Sigma_X[self.D:2 * self.D, self.D:2 * self.D])
 
+        # Define new L-kernel
         def L_logpdf(x, x_cond):
 
             # Mean of approximately optimal L-kernel
@@ -55,8 +56,19 @@ class SMC_OPT(SMC_BASE):
             Sigma = (Sigma_x_x - Sigma_x_xnew @
                      np.linalg.inv(Sigma_xnew_xnew) @ Sigma_xnew_x)
 
-            p = Normal_PDF(mean=mu, cov=Sigma)
-            return p.logpdf(x)
+            # Log det covariance matrix
+            sign, logdet = np.linalg.slogdet(Sigma)
+            log_det_Sigma = sign * logdet
+
+            # Inverse covariance matrix
+            inv_Sigma = np.linalg.inv(Sigma)
+
+            # Find log pdf
+            logpdf = (-0.5 * log_det_Sigma -
+                      0.5 * (x - mu).T @ inv_Sigma @ (x - mu))
+
+            return logpdf
+
         self.L = L_Kernel()
         self.L.logpdf = L_logpdf
 

@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import sys
 sys.path.append('..')  # noqa
 from scipy.stats import multivariate_normal as Normal_PDF
-from Normal_PDF_Cond import *
 from GMM_PDF import *
 from SMC_BASE import *
 from SMC_OPT import *
@@ -28,34 +27,22 @@ def p_pdf(x):
 p.logpdf = p_pdf    
 
 # Define initial proposal
-q0 = Q0_Proposal()
-q0.pdf = Normal_PDF(mean=0, cov=3)
-def q0_logpdf(x):
-    return q0.pdf.logpdf(x)
-def q0_rvs(size):
-    return q0.pdf.rvs(size)
-q0.logpdf = q0_logpdf
-q0.rvs = q0_rvs    
+q0 = Normal_PDF(mean=0, cov=3)
 
-# Define proposal
+# Define proposal as being Gaussian, centered on x_cond, with variance
+# equal to 0.1
 q = Q_Proposal()
-q.pdf = Normal_PDF(cov=0.1)
-def q_logpdf(x, x_cond):
-    q.pdf.mean = x_cond
-    return q.pdf.logpdf(x)
-def q_rvs(x_cond):
-    q.pdf.mean = x_cond
-    return q.pdf.rvs()
-q.logpdf = q_logpdf
-q.rvs = q_rvs
+q.var = 0.1
+q.std = np.sqrt(q.var)
+q.logpdf = lambda x, x_cond : -1/(2*q.var) * (x - x_cond)**2
+q.rvs = lambda x_cond : x_cond + q.std * np.random.randn()
 
-# Define L-kernel
+# Define L-kernel as being Gaussian, centered on x_cond, with variance
+# equal to 0.1
 L = L_Kernel()
-L.pdf = Normal_PDF(cov=0.1)
-def L_logpdf(x, x_cond):
-    L.pdf.mean = x_cond
-    return L.pdf.logpdf(x)
-L.logpdf = L_logpdf
+L.var = 0.1
+L.std = np.sqrt(L.var)
+L.logpdf = lambda x, x_cond : -1/(2*L.var) * (x - x_cond)**2
 
 # No. samples and iterations
 N = 500
