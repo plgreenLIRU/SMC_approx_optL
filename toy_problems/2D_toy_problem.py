@@ -13,23 +13,11 @@ P.L.Green
 """
 
 # Define target distribution
-p = Target()
-p.pdf = Normal_PDF(mean=np.array([3.0, 2.0]),
-                   cov=np.eye(2))
-def p_pdf(x):
-    return p.pdf.logpdf(x)
-p.logpdf = p_pdf
+p = Normal_PDF(mean=np.array([3.0, 2.0]),
+               cov=np.eye(2))
 
 # Define initial proposal
-q0 = Q0_Proposal()
-q0.pdf = Normal_PDF(mean=np.zeros(2),
-                    cov=np.eye(2))
-def q0_logpdf(x):
-    return q0.pdf.logpdf(x)
-def q0_rvs(size):
-    return q0.pdf.rvs(size)
-q0.logpdf = q0_logpdf
-q0.rvs = q0_rvs    
+q0 = Normal_PDF(mean=np.zeros(2), cov=np.eye(2))  
 
 # Define proposal
 q = Q_Proposal()
