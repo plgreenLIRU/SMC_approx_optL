@@ -1,21 +1,150 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import copy
+from abc import abstractmethod
 
-"""
-A base class for an SMC sampler.
+class Target():
+    """
+    Description
+    -----------
+    This shows the methods that user will need to define to specify
+    the target distribution. 
+    
+    """
 
-P.L.Green
-"""
+    @abstractmethod
+    def logpdf(x):
+        """
+        Description
+        -----------
+        Returns log pdf of the target distribution, evaluated at x. 
+                
+        """
+        pass
 
+class Q0_Proposal():
+    """
+    Description
+    -----------
+    This shows the methods that user will need to define to specify
+    the initial proposal distribution. 
+    
+    """
+    
+    @abstractmethod
+    def logpdf(x):
+        """
+        Description
+        -----------
+        Returns log pdf of the initial proposal, evaluated at x. 
+        """
+        pass
+        
+    @abstractmethod
+    def rvs(size):
+        """
+        Description
+        -----------
+        Returns samples from the initial proposal.
+        
+        Parameters
+        ----------
+        size : size of the sample being returned
+        """
+        pass
+
+class Q_Proposal():
+    """
+    Description
+    -----------
+    This shows the methods that user will need to define to specify
+    the general proposal distribution. 
+    
+    """
+
+    @abstractmethod
+    def logpdf(x, x_cond):
+        """
+        Description
+        -----------
+        Returns log q(x | x_cond)
+        """
+        pass
+        
+    @abstractmethod
+    def rvs(x_cond):
+        """
+        Description
+        -----------
+        Returns a single sample from the proposal, q(x | x_cond).
+        """
+        
+        pass
+        
+class L_Kernel():
+    """
+    Description
+    -----------
+    This shows the methods that user will need to define to specify
+    the L-kernel.  
+    
+    """
+        
+    @abstractmethod
+    def logpdf(x, x_cond):
+        """
+        Description
+        -----------
+        Returns log L(x | x_cond)
+        """
+        pass       
 
 class SMC_BASE():
 
+    """
+    Description
+    -----------
+    A base class for an SMC sampler.
+    
+    Parameters
+    ----------
+    N : no. of samples generated at each iteration
+    
+    D : dimension of the target distribution
+    
+    p : target distribution instance
+    
+    q0 : initial proposal instance
+    
+    K : no. iterations to run
+    
+    q : general proposal distribution instance
+    
+    L : L-kernel instance
+    
+    Methods
+    -------
+    normalise_weights : normalises importance sampling weights
+    
+    resample : resamples from normalised importance weights
+    
+    estimate : realise importance sampling estimates of mean and 
+        covariance matrix of the target. 
+        
+    generate_samples : runs the SMC sampler to generate weighted 
+        samples from the target. 
+        
+    propose_sample : proposes new samples, could probably remove in the
+        future. 
+        
+    update_weights : updates the log weight associated with each sample
+        i.e. evaluates the incremental weights. 
+
+    Author
+    ------
+    P.L.Green
+    """
+
     def __init__(self, N, D, p, q0, K, q, L):
-
-        """ Initialiser class method
-
-        """
 
         # Assign variables to self
         self.N = N
@@ -27,12 +156,22 @@ class SMC_BASE():
         self.L = L
 
     def normalise_weights(self, logw):
-        """ Normalise importance weights. Note that we remove the mean here
-            just to avoid numerical errors in evaluating the exponential.
-
+        """ 
+        Description
+        -----------
+        Normalise importance weights. Note that we remove the mean here
+            just to avoid numerical errors in evaluating the exponential. 
             We have to be careful with -inf values in the log weights
             sometimes. This can happen if we are sampling from a pdf with
             zero probability regions, for example.
+            
+        Parameters
+        ----------
+        logw : array of logged importance weights
+        
+        Returns
+        -------
+        wn : array of normalised weights
 
         """
 
@@ -44,24 +183,64 @@ class SMC_BASE():
 
         # Find standard weights
         w = np.exp(logw)
+        
+        # Find normalised weights
+        wn = w / np.sum(w)
 
-        return w / np.sum(w)
+        return wn
 
     def resample(self, x, p_logpdf_x, wn):
-        """ Resample given normalised weights.
+        """ 
+        Description
+        -----------
+        Resample given normalised weights.
 
-            p_logpdf is an array of current target evaluations.
+        Parameters
+        ----------
+        x : array of current samples
+        
+        p_logpdf_x : array of current target evaluations.
+        
+        wn : array or normalised weights
+        
+        Returns
+        -------
+        x_new : resampled values of x
+        
+        p_logpdf_x_new : log pdfs associated with x_new
+        
+        wn_new : normalised weights associated with x_new
+        
         """
 
         i = np.linspace(0, self.N-1, self.N, dtype=int)  # Sample positions
         i_new = np.random.choice(i, self.N, p=wn[:, 0])   # i is resampled
         wn_new = np.ones(self.N) / self.N           # wn is reset
 
-        return x[i_new], p_logpdf_x[i_new], wn_new
+        # New samples
+        x_new = x[i_new]
+        p_logpdf_x_new = p_logpdf_x[i_new]
+
+        return x_new, p_logpdf_x_new, wn_new
 
     def estimate(self, x, wn):
-        """ Estimate some quantities of interest (just mean and
-            covariance matrix for now).
+        """ 
+        Description
+        -----------
+        Estimate some quantities of interest (just mean and covariance 
+            matrix for now).
+            
+        Parameters
+        ----------
+        x : samples from the target
+        
+        wn : normalised weights associated with the target
+        
+        Returns
+        -------
+        m : estimated mean
+        
+        v : estimated covariance matrix
 
         """
 
@@ -82,7 +261,11 @@ class SMC_BASE():
         return m, v
 
     def generate_samples(self):
-        """ Run SMC sampler to generate weighted samples from the target.
+
+        """ 
+        Description
+        -----------
+        Run SMC sampler to generate weighted samples from the target.
 
         """
 
@@ -173,7 +356,19 @@ class SMC_BASE():
         self.logw = logw
 
     def propose_sample(self, x_cond):
-        """ Method used specifically to propose new samples.
+        """ 
+        Description
+        -----------
+        Method used specifically to propose new samples, conditional on 
+            x_cond. Could probably remove this in the future. 
+        
+        Parameters
+        ----------
+        x_cond : conditional value of x
+        
+        Returns
+        -------
+        x_new : new sample
 
         """
 
@@ -183,7 +378,27 @@ class SMC_BASE():
         return x_new
 
     def update_weights(self, x, x_new, logw, p_logpdf_x, p_logpdf_x_new):
-        """ Used to update the log weights.
+        """ 
+        Description
+        -----------
+        Used to update the log weights of a new set of samples, using the 
+            weights of the samples from the previous iteration.
+            
+        Parameters
+        ----------
+        x : samples from the previous iteration
+        
+        x_new : samples from the current iteration
+        
+        logw : low importance weights associated with x
+        
+        p_logpdf_x : log target evaluations associated with x
+        
+        p_logpdf_x_new : log target evaluations associated with x_new
+        
+        Returns
+        -------
+        logw_new : log weights associated with x_new
 
         """
 

@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import sys
 sys.path.append('..')  # noqa
 from scipy.stats import multivariate_normal as Normal_PDF
-from Normal_PDF_Cond import *
 from SMC_BASE import *
 from SMC_OPT import *
 
@@ -13,45 +12,23 @@ Estimating the optimum L-kernel for a 2D toy problem.
 P.L.Green
 """
 
-# Define target distribution
-p = Normal_PDF(mean=np.array([3.0, 2.0]),
-               cov=np.array([[1, 0], [0, 1]]))
+# Define target distribution 
+p = Normal_PDF(mean=np.array([3.0, 2.0]), cov=np.eye(2))
 
 # Define initial proposal
-q0 = Normal_PDF(mean=np.array([0, 0]),
-                cov=np.array([[1, 0], [0, 1]]))
+q0 = Normal_PDF(mean=np.zeros(2), cov=np.eye(2))  
 
+# Define proposal as being Gaussian, centered on x_cond, with identity 
+# covariance matrix
+q = Q_Proposal()
+q.logpdf = lambda x, x_cond : -0.5 * (x - x_cond).T @ (x - x_cond)
+q.rvs = lambda x_cond : x_cond + np.random.randn(2)
 
-def L_mean(x_cond):
-    """ L-kernel mean
-    """
-    return x_cond
-
-
-def L_var(x_cond):
-    """ L-kernel covariance matrix
-    """
-    return np.array([[1, 0], [0, 1]])
-
-
-# Define L-kernel
-L = Normal_PDF_Cond(D=2, mean=L_mean, cov=L_var)
-
-
-def q_mean(x_cond):
-    """ Proposal mean
-    """
-    return x_cond
-
-
-def q_var(x_cond):
-    """ Proposal covariance matrix
-    """
-    return np.array([[1, 0], [0, 1]])
-
-
-# Define proposal distribution
-q = Normal_PDF_Cond(D=2, mean=q_mean, cov=q_var)
+# Define L-kernel as being Gaussian, centered on x_cond, with identity 
+# covariance matrix
+L = L_Kernel()
+L.logpdf = lambda x, x_cond : -0.5 * (x - x_cond).T @ (x - x_cond)
+L.rvs = lambda x_cond : x_cond + np.random.randn(2)
 
 # No. samples and iterations
 N = 500
@@ -99,7 +76,6 @@ ax[1].set_xlabel('Iteration')
 ax[1].set_ylabel('E[$x_2$]')
 
 plt.tight_layout()
-fig.savefig('../notes/figures/2D_toy_problem_mean.pdf')
 
 # Plots of estimated elements of covariance matrix
 fig, ax = plt.subplots(nrows=3, ncols=1)
@@ -122,7 +98,6 @@ ax[2].set_xlabel('Iteration')
 ax[2].set_ylabel('Cov$[x_2, x_2]$')
 
 plt.tight_layout()
-fig.savefig('../notes/figures/2D_toy_problem_cov.pdf')
 
 # Plot of effective sample size (overview and close-up)
 fig, ax = plt.subplots(nrows=2, ncols=1)
@@ -139,6 +114,5 @@ for i in range(2):
         ax[i].set_xlim(0, 20)
     ax[i].set_ylim(0, 1)
 plt.tight_layout()
-fig.savefig('../notes/figures/2D_toy_problem_Neff.pdf')
 
 plt.show()

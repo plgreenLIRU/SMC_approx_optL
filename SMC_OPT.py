@@ -1,6 +1,6 @@
 import numpy as np
 from SMC_BASE import *
-from Normal_PDF_Cond import *
+from scipy.stats import multivariate_normal as Normal_PDF
 
 """
 A class of SMC sampler that builds on the SMC base class by allowing a
@@ -45,25 +45,32 @@ class SMC_OPT(SMC_BASE):
                              Sigma_X[self.D:2 * self.D, 0:self.D],
                              Sigma_X[self.D:2 * self.D, self.D:2 * self.D])
 
-        # Mean of p(x | xnew)
-        def mu_x_cond_xnew(xnew):
+        # Define new L-kernel
+        def L_logpdf(x, x_cond):
 
+            # Mean of approximately optimal L-kernel
             mu = (mu_x + Sigma_x_xnew @ np.linalg.inv(Sigma_xnew_xnew) @
-                  (xnew - mu_xnew))
+                  (x_cond - mu_xnew))
 
-            return mu
-
-        # Variance of p(x | xnew)
-        def Sigma_x_cond_xnew(xnew):
-
+            # Variance of approximately optimal L-kernel
             Sigma = (Sigma_x_x - Sigma_x_xnew @
                      np.linalg.inv(Sigma_xnew_xnew) @ Sigma_xnew_x)
 
-            return Sigma
+            # Log det covariance matrix
+            sign, logdet = np.linalg.slogdet(Sigma)
+            log_det_Sigma = sign * logdet
 
-        self.L = Normal_PDF_Cond(D=self.D,
-                                 mean=mu_x_cond_xnew,
-                                 cov=Sigma_x_cond_xnew)
+            # Inverse covariance matrix
+            inv_Sigma = np.linalg.inv(Sigma)
+
+            # Find log pdf
+            logpdf = (-0.5 * log_det_Sigma -
+                      0.5 * (x - mu).T @ inv_Sigma @ (x - mu))
+
+            return logpdf
+
+        self.L = L_Kernel()
+        self.L.logpdf = L_logpdf
 
     def update_weights(self, x, x_new, logw, p_log_pdf_x, p_log_pdf_x_new):
         """ Overwrites the method in the base-class

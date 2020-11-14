@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import sys
 sys.path.append('..')  # noqa
 from scipy.stats import multivariate_normal as Normal_PDF
-from Normal_PDF_Cond import *
 from GMM_PDF import *
 from SMC_BASE import *
 from SMC_OPT import *
@@ -17,46 +16,33 @@ P.L.Green
 """
 
 # Define target distribution
-p = GMM_PDF(D=1,
-            means=[np.array(-3), np.array(3)],
-            vars=[np.array(1), np.array(1)],
-            weights=[0.5, 0.5],
-            n_components=2)
+p = Target()
+p.pdf = GMM_PDF(D=1,
+                means=[np.array(-3), np.array(3)],
+                vars=[np.array(1), np.array(1)],
+                weights=[0.5, 0.5],
+                n_components=2)
+def p_pdf(x):
+    return p.pdf.logpdf(x)
+p.logpdf = p_pdf    
 
 # Define initial proposal
 q0 = Normal_PDF(mean=0, cov=3)
 
+# Define proposal as being Gaussian, centered on x_cond, with variance
+# equal to 0.1
+q = Q_Proposal()
+q.var = 0.1
+q.std = np.sqrt(q.var)
+q.logpdf = lambda x, x_cond : -1/(2*q.var) * (x - x_cond)**2
+q.rvs = lambda x_cond : x_cond + q.std * np.random.randn()
 
-def q_mean(x_cond):
-    """ Proposal mean
-    """
-    return x_cond
-
-
-def q_var(x_cond):
-    """ Proposal variance
-    """
-    return 0.1
-
-
-# Define proposal distribution
-q = Normal_PDF_Cond(D=1, mean=q_mean, cov=q_var)
-
-
-def L_mean(x_cond):
-    """ L-kernel mean
-    """
-    return x_cond
-
-
-def L_var(x_cond):
-    """ L-kernel variance
-    """
-    return 0.1
-
-
-# Define L-kernel for 'user-defined' implementation
-L = Normal_PDF_Cond(D=1, mean=L_mean, cov=L_var)
+# Define L-kernel as being Gaussian, centered on x_cond, with variance
+# equal to 0.1
+L = L_Kernel()
+L.var = 0.1
+L.std = np.sqrt(L.var)
+L.logpdf = lambda x, x_cond : -1/(2*L.var) * (x - x_cond)**2
 
 # No. samples and iterations
 N = 500
@@ -110,7 +96,6 @@ ax[1].plot(smc_opt_gmm.var_estimate_EES, 'b',
 ax[1].set_xlabel('Iteration')
 ax[1].set_ylabel('Var[$x$]')
 plt.tight_layout()
-fig.savefig('../notes/figures/2_component_mean_var.pdf')
 
 # Plot of effective sample size (overview and close-up)
 fig, ax = plt.subplots(nrows=2, ncols=1)
@@ -130,6 +115,5 @@ for i in range(2):
         ax[i].set_xlim(0, 50)
     ax[i].set_ylim(0, 1)
 plt.tight_layout()
-fig.savefig('../notes/figures/2_component_Neff.pdf')
 
 plt.show()
