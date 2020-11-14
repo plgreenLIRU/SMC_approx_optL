@@ -21,6 +21,7 @@ We actively encourage people to contribute to our code. If you would like to do 
 
 ## Versions
 V1 : originally submitted with paper
+
 V2 : now uses abstract methods to make it more clear what the user needs to define
 
 Queries to: p.l.green@liverpool.ac.uk
