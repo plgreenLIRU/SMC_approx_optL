@@ -19,4 +19,8 @@ During development we made a series of tests for verification purposes. To execu
 ## Contributions
 We actively encourage people to contribute to our code. If you would like to do so, please fork the repository and issue a pull request. We try to write everything in PEP8 notation - the file `PEP8_test.py` will automatically test the notation of all python files in the repository. If you find any problems, please feel free to raise an `issue` through Github and we'll do our best to get back to you.
 
+## Versions
+V1 : originally submitted with paper
+V2 : now uses abstract methods to make it more clear what the user needs to define
+
 Queries to: p.l.green@liverpool.ac.uk
