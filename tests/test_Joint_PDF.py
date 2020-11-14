@@ -28,10 +28,10 @@ X = p.rvs(N)
 
 def test_samples():
 
-    assert(np.mean(X1_true) - np.mean(X[:, 0]) < 0.05)
-    assert(np.mean(X2_true) - np.mean(X[:, 1]) < 0.05)
-    assert(np.var(X1_true) - np.var(X[:, 0]) < 0.05)
-    assert(np.var(X2_true) - np.var(X[:, 1]) < 0.05)
+    assert(np.mean(X1_true) - np.mean(X[:, 0]) < 0.1)
+    assert(np.mean(X2_true) - np.mean(X[:, 1]) < 0.1)
+    assert(np.var(X1_true) - np.var(X[:, 0]) < 0.1)
+    assert(np.var(X2_true) - np.var(X[:, 1]) < 0.1)
 
 
 def test_logp():

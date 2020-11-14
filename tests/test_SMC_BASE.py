@@ -3,7 +3,6 @@ import sys
 sys.path.append('..')  # noqa
 from SMC_BASE import *
 from scipy.stats import multivariate_normal as Normal_PDF
-from Normal_PDF_Cond import *
 
 """
 Testing for SMC_BASE
@@ -11,49 +10,27 @@ Testing for SMC_BASE
 P.L.Green
 """
 
-# Define target distribution
-p = Normal_PDF(mean=np.array([0., 0.]),
-               cov=np.array([[1., 0.], [0., 1.]]))
+# Define target distribution 
+p = Normal_PDF(mean=np.array([3.0, 2.0]), cov=np.eye(2))
 
 # Define initial proposal
-q0 = Normal_PDF(mean=np.array([0., 0.]),
-                cov=1.1 * np.array([[1., 0.], [0., 1.]]))
+q0 = Normal_PDF(mean=np.zeros(2), cov=np.eye(2))  
 
+# Define proposal as being Gaussian, centered on x_cond, with identity 
+# covariance matrix
+q = Q_Proposal()
+q.logpdf = lambda x, x_cond : -0.5 * (x - x_cond).T @ (x - x_cond)
+q.rvs = lambda x_cond : x_cond + np.random.randn(2)
 
-def L_mean(x_cond):
-    """ L-kernel mean
-    """
-    return x_cond
-
-
-def L_var(x_cond):
-    """ L-kernel covariance matrix
-    """
-    return 0.01 * np.array([[1, 0], [0, 1]])
-
-
-# Define L-kernel
-L = Normal_PDF_Cond(D=2, mean=L_mean, cov=L_var)
-
-
-def q_mean(x_cond):
-    """ Proposal mean
-    """
-    return x_cond
-
-
-def q_var(x_cond):
-    """ Proposal covariance matrix
-    """
-    return 0.01 * np.array([[1, 0], [0, 1]])
-
-
-# Define proposal distribution
-q = Normal_PDF_Cond(D=2, mean=q_mean, cov=q_var)
+# Define L-kernel as being Gaussian, centered on x_cond, with identity 
+# covariance matrix
+L = L_Kernel()
+L.logpdf = lambda x, x_cond : -0.5 * (x - x_cond).T @ (x - x_cond)
+L.rvs = lambda x_cond : x_cond + np.random.randn(2)
 
 # No. samples and iterations
 N = 1000
-K = 20
+K = 500
 
 # SMC sampler with user-defined L-kernel
 smc = SMC_BASE(N=N, D=2, p=p, q0=q0, K=K, q=q, L=L)
@@ -90,22 +67,3 @@ def test_normalise_weights():
 
     logw[0] = -np.inf
     assert np.allclose(np.sum(wn), 1.0, atol=1e-8)
-
-
-def test_resample():
-    """ Initial proposal is very close to target so, after resampling, we
-    should be left with a pretty representitive set of samples (whose mean
-    and variance is close to the mean and variance of the target).
-
-    """
-
-    # A quick test, so we repeat it 100 times
-    for n in range(100):
-        X = q0.rvs(N)  # Generate samples
-        p_logpdf_x = p.logpdf(X)  # log pdf of target
-        logw = p_logpdf_x - q0.logpdf(X)  # log weights
-        wn = np.vstack(smc.normalise_weights(logw))  # normalised log weights
-        X_rs = smc.resample(X, p_logpdf_x, wn)[0]  # resample
-
-        assert np.allclose(np.mean(X_rs), p.mean, atol=0.3)
-        assert np.allclose(np.var(X_rs, 0), np.diag(p.cov), atol=0.3)
