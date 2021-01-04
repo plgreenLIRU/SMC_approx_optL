@@ -17,11 +17,14 @@ If you would like to use the code, it would be really useful if did so by forkin
 During development we made a series of tests for verification purposes. To execute the tests install `pytest` and run it in the `tests` folder. 
 
 ## Contributions
-We actively encourage people to contribute to our code. If you would like to do so, please fork the repository and issue a pull request. We try to write everything in PEP8 notation - the file `PEP8_test.py` will automatically test the notation of all python files in the repository. If you find any problems, please feel free to raise an `issue` through Github and we'll do our best to get back to you.
+We actively encourage people to contribute to our code. If you would like to do so, please fork the repository and issue a pull request. We try to write everything in PEP8 notation(ish). If you find any problems, please feel free to raise an `issue` through Github and we'll do our best to get back to you.
 
 ## Versions
-V1 : originally submitted with paper
+V1 : originally submitted with first version of the paper (https://arxiv.org/abs/2004.12838).
 
-V2 : now uses abstract methods to make it more clear what the user needs to define
+V2 : now uses abstract methods to make it more clear what the user needs to define.
 
+V3 : added example of the approach applied to a single-degree-of-freedom system. 
+
+## Contact
 Queries to: p.l.green@liverpool.ac.uk
