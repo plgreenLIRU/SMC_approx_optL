@@ -6,9 +6,7 @@ Code accompanying the paper
 
 ## Code structure 
 
-Code accompanying the first submission of the paper is in the branch 'v1' and can be accessed using `git checkout v1`. We are keeping the master branch separate so that we can use it to bring in future developments if needed.
-
-The examples in the paper can be replicated by running code in the folder `toy_problems`.
+Code accompanying the first submission of the paper (https://arxiv.org/abs/2004.12838) is in the branch 'v1' and can be accessed using `git checkout v1`. We are keeping the master branch separate so that we can use it to bring in future developments if needed. Future versions will then be created when we develop beyond the original paper. 
 
 ## Using the code
 If you would like to use the code, it would be really useful if did so by forking the current repository. This just gives us a way of seeing how the code is being used etc. 
