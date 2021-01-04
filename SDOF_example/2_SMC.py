@@ -116,4 +116,20 @@ for i in range(3):
 ax[0].legend(loc='upper left', bbox_to_anchor=(1, 1))
 plt.tight_layout()
 
+# Plot of effective sample size (overview and close-up)
+fig, ax = plt.subplots(nrows=2, ncols=1)
+for i in range(2):
+    ax[i].plot(smc.Neff / smc.N, 'k', label='Forward proposal L-kernel')
+    ax[i].plot(smc_optL.Neff / smc.N, 'r', label='Optimal L-kernel')
+    ax[i].set_xlabel('Iteration')
+    ax[i].set_ylabel('$N_{eff} / N$')
+    if i == 0:
+        ax[i].set_title('(a)')
+        ax[i].legend(loc='upper left', bbox_to_anchor=(1, 1))
+    elif i == 1:
+        ax[i].set_title('(b)')
+        ax[i].set_xlim(0, 20)
+    ax[i].set_ylim(0, 1)
+plt.tight_layout()
+
 plt.show()
