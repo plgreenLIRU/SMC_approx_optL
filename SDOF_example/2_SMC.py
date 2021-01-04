@@ -98,4 +98,22 @@ for i in range(3):
 ax[0].legend(loc='upper left', bbox_to_anchor=(1, 1))
 plt.tight_layout()
 
+# Plot SMC results (estimates of covariance terms)
+fig, ax = plt.subplots(nrows=3)
+for i in range(3):
+    ax[i].plot(smc.var_estimate_EES[:, i, i], 'k', 
+               label='Forward proposal L-kernel')
+    ax[i].plot(smc_optL.var_estimate_EES[:, i, i], 'r', 
+               label='Optimal L-kernel')
+    ax[i].set_xlabel('Iteration')
+    if i == 0:
+        ax[i].set_ylabel('Var[$k$]')
+    if i == 1:
+        ax[i].set_ylabel('Var[$c$]')
+    if i == 2:
+        ax[i].set_ylabel('Var[$\sigma$]')
+    
+ax[0].legend(loc='upper left', bbox_to_anchor=(1, 1))
+plt.tight_layout()
+
 plt.show()
