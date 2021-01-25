@@ -1,5 +1,6 @@
 import numpy as np
 from SMC_BASE import *
+from QR_PCA_ROUTINE import *
 from scipy.stats import multivariate_normal as Normal_PDF
 
 """
@@ -12,10 +13,11 @@ P.L.Green
 
 class SMC_OPT(SMC_BASE):
 
-    def __init__(self, N, D, p, q0, K, q):
+    def __init__(self, N, D, p, q0, K, q, PCA = None):
         """ Initialiser class method
 
         """
+        self.QR_PCA, self.t, self.unique_basis = PCA[0], PCA[1], PCA[2]
 
         # Initiate standard SMC sampler but with no L-kernel defined
         super().__init__(N, D, p, q0, K, q, L=None)
@@ -27,11 +29,26 @@ class SMC_OPT(SMC_BASE):
 
         # Collect x and x_new together into X
         X = np.hstack([x, x_new])
+        self.X = X
 
         # Directly estimate the mean and
         # covariance matrix of X
-        mu_X = np.mean(X, axis=0)
+        
         Sigma_X = np.cov(np.transpose(X))
+        
+        if self.QR_PCA == True:
+            Phi = QR_PCA(Sigma_X, t = self.t, D = self.D, unique_basis = self.unique_basis)
+            Z = np.zeros((self.N, self.t))
+            for i in range(self.N):
+                Z[i] = Phi.T @ X[i]
+            mu_Z = np.mean(Z, axis=0)
+            Sigma_Z = np.cov(np.transpose(Z))
+            mu_X = Phi @ mu_Z
+            Sigma_X = Phi @ Sigma_Z @ Phi.T
+        else:
+            mu_X = np.mean(X, axis=0)
+        
+        self.sig = Sigma_X
 
         # Find mean of joint distribution (p(x, x_new))
         mu_x, mu_xnew = mu_X[0:self.D], mu_X[self.D:2 * self.D]
