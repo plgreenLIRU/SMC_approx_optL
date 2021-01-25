@@ -31,13 +31,6 @@ class SMC_OPT(SMC_BASE):
         # covariance matrix of X
         Sigma_X = np.cov(np.transpose(X))
         
-        
-        
-        
-        
-        
-        
-        
         if self.QR_PCA == True:
             V, Phi = linalg.eigh(Sigma_X, subset_by_index=([2*self.D - self.t, 2*self.D - 1]))
             Phi = np.flip(Phi, 1)
