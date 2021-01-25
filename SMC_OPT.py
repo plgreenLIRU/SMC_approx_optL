@@ -13,12 +13,11 @@ P.L.Green
 
 class SMC_OPT(SMC_BASE):
 
-    def __init__(self, N, D, p, q0, K, q, PCA = None):
+    def __init__(self, N, D, p, q0, K, q, PCA = [False, 0, False]):
         """ Initialiser class method
 
         """
-        if PCA is not None:
-            self.QR_PCA, self.t, self.unique_basis = PCA[0], PCA[1], PCA[2]
+        self.QR_PCA, self.t, self.unique_basis = PCA[0], PCA[1], PCA[2]
 
         # Initiate standard SMC sampler but with no L-kernel defined
         super().__init__(N, D, p, q0, K, q, L=None)
