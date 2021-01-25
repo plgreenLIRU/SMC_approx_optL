@@ -17,7 +17,8 @@ class SMC_OPT(SMC_BASE):
         """ Initialiser class method
 
         """
-        self.QR_PCA, self.t, self.unique_basis = PCA[0], PCA[1], PCA[2]
+        if PCA is not None:
+            self.QR_PCA, self.t, self.unique_basis = PCA[0], PCA[1], PCA[2]
 
         # Initiate standard SMC sampler but with no L-kernel defined
         super().__init__(N, D, p, q0, K, q, L=None)
