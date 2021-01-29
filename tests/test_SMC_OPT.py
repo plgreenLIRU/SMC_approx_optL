@@ -67,4 +67,3 @@ def test_Neff():
 
     smc.generate_samples()
     assert np.mean(smc_opt.Neff) > np.mean(smc.Neff)
-test_sampler()
