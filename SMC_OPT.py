@@ -37,7 +37,7 @@ class SMC_OPT(SMC_BASE):
             Z = X @ Phi
             mu_Z = np.mean(Z, axis=0)
             Sigma_Z = np.cov(Z.T)
-            Sigma_X = Phi @ Sigma_Z @ Phi.T
+            Sigma_X = Phi @ Sigma_Z @ Phi.T + 0.05 ** 2 * np.eye(2*self.D)
             mu_X = Phi @ mu_Z
         else:
             mu_X = np.mean(X, axis=0)

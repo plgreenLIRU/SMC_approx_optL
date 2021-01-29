@@ -10,7 +10,7 @@ from scipy.stats import multivariate_normal as Normal_PDF
 Testing for SMC_OPT
 P.L.Green
 """
-D = 10
+D = 10 #target distribution dimension
 # Define target distribution 
 p = Normal_PDF(mean=np.array([1.0 for i in range(D)]), cov=np.eye(D))
 
@@ -37,8 +37,8 @@ K = 500
 #smc = SMC_OPT(N=N, D=2, p=p, q0=q0, K=K, q=q)
 
 # SMC sampler with optimum L
-smc_opt = SMC_OPT(N=N, D=D, p=p, q0=q0, K=K, q=q, QR_PCA = True, t = 8)
-
+smc_opt_QR = SMC_OPT(N=N, D=D, p=p, q0=q0, K=K, q=q, QR_PCA = True, t = 18) #t \in [2, 2*D]
+smc_opt = SMC_OPT(N=N, D=D, p=p, q0=q0, K=K, q=q, QR_PCA = False)
 
 def test_sampler():
     """ For this simple example, we test that the SMC estimates of target mean
@@ -51,13 +51,13 @@ def test_sampler():
     smc_opt.generate_samples()
 
     # Check estimates
-    '''assert np.allclose(smc_opt.mean_estimate_EES[-1], p.mean, atol=0.1)
+    assert np.allclose(smc_opt.mean_estimate_EES[-1], p.mean, atol=0.1)
     assert np.allclose(smc_opt.var_estimate_EES[-1][0][0], p.cov[0][0],
                        atol=0.2)
     assert np.allclose(smc_opt.var_estimate[-1][1][1], p.cov[1][1],
                        atol=0.2)
     assert np.allclose(smc_opt.var_estimate[-1][0][1], p.cov[0][1],
-                       atol=0.2)'''
+                       atol=0.2)
 
 
 def test_Neff():
@@ -68,5 +68,7 @@ def test_Neff():
 
     smc.generate_samples()
     assert np.mean(smc_opt.Neff) > np.mean(smc.Neff)
+smc_opt_QR.generate_samples()
 smc_opt.generate_samples()
+print((smc_opt_QR.mean_estimate_EES[-1]))
 print((smc_opt.mean_estimate_EES[-1]))
