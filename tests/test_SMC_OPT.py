@@ -37,7 +37,7 @@ smc = SMC_BASE(N=N, D=2, p=p, q0=q0, K=K, q=q, L=L)
 
 # SMC sampler with optimum L
 smc_opt = SMC_OPT(N=N, D=2, p=p, q0=q0, K=K, q=q)
-
+smc_opt_qr = SMC_OPT(N=N, D=2, p=p, q0=q0, K=K, q=q, QR_PCA = True, t = 1)
 
 def test_sampler():
     """ For this simple example, we test that the SMC estimates of target mean
@@ -48,6 +48,9 @@ def test_sampler():
 
     # SMC sampler with approximately optimum L-kernel
     smc_opt.generate_samples()
+    
+    # SMC sampler with approximately optimum L-kernel with QR method
+    smc_opt_qr.generate_samples()
 
     # Check estimates
     assert np.allclose(smc_opt.mean_estimate_EES[-1], p.mean, atol=0.1)
@@ -67,4 +70,3 @@ def test_Neff():
 
     smc.generate_samples()
     assert np.mean(smc_opt.Neff) > np.mean(smc.Neff)
-test_sampler()
