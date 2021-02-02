@@ -23,23 +23,32 @@ class SMC_OPT(SMC_BASE):
     def find_optL(self, x, x_new):
         """ Generate a Gaussian approximation of the optimum L-kernel.
         """
-
-        # Collect x and x_new together into X
-        X = np.hstack([x, x_new])
-
-        # Directly estimate the
-        # covariance matrix of X
-        Sigma_X = np.cov(np.transpose(X))
+        
         
         if self.QR_PCA == True:
-            V, Phi = linalg.eigh(Sigma_X, subset_by_index=([2*self.D - self.t, 2*self.D - 1]))
+            K1 = np.cov(x.T)
+            V, Phi = linalg.eigh(K1, subset_by_index=([self.D - self.t, self.D - 1]))
             Phi = np.flip(Phi, 1)
-            Z = X @ Phi
-            mu_Z = np.mean(Z, axis=0)
-            Sigma_Z = np.cov(Z.T)
-            Sigma_X = Phi @ Sigma_Z @ Phi.T + 0.05 ** 2 * np.eye(2*self.D)
-            mu_X = Phi @ mu_Z
+            Z1 = x @ Phi
+            
+            K2 = np.cov(x_new.T)
+            U, Theta = linalg.eigh(K2, subset_by_index=([self.D - self.t, self.D - 1]))
+            Theta = np.flip(Theta, 1)
+            Z2 = x_new @ Theta
+            
+            Z3 = np.hstack([Z1,Z2])
+            K = np.cov(Z3.T)
+            mu = np.mean(Z3, axis = 0)
+            
+            A = np.zeros((2 * self.D, 2 * self.t))
+            A[0:self.D, 0:self.t] = Phi
+            A[self.D: 2 * self.D, self.t: 2 * self.t] = Theta
+            Sigma_X = A @ K @ A.T + 0.001 ** 2 * np.eye(2 * self.D)
+            mu_X = A @ mu
+            
         else:
+            X = np.hstack([x, x_new])
+            Sigma_X = np.cov(np.transpose(X))
             mu_X = np.mean(X, axis=0)
 
         # Find mean of joint distribution (p(x, x_new))

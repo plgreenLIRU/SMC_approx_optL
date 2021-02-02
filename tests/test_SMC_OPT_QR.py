@@ -10,7 +10,7 @@ from scipy.stats import multivariate_normal as Normal_PDF
 Testing for SMC_OPT
 P.L.Green
 """
-D = 10 #target distribution dimension
+D = 4 #target distribution dimension
 # Define target distribution 
 p = Normal_PDF(mean=np.array([1.0 for i in range(D)]), cov=np.eye(D))
 
@@ -31,13 +31,13 @@ L.rvs = lambda x_cond : x_cond + np.random.randn(D)
 
 # No. samples and iterations
 N = 1000
-K = 500
+K = 10
 
 # SMC sampler with user-defined L-kernel
 #smc = SMC_OPT(N=N, D=2, p=p, q0=q0, K=K, q=q)
 
 # SMC sampler with optimum L
-smc_opt_QR = SMC_OPT(N=N, D=D, p=p, q0=q0, K=K, q=q, QR_PCA = True, t = 18) #t \in [2, 2*D]
+smc_opt_QR = SMC_OPT(N=N, D=D, p=p, q0=q0, K=K, q=q, QR_PCA = True, t = 3) #t \in [1, D]
 smc_opt = SMC_OPT(N=N, D=D, p=p, q0=q0, K=K, q=q, QR_PCA = False)
 
 def test_sampler():
