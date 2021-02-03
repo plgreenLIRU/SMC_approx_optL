@@ -7,7 +7,8 @@ from scipy.stats import multivariate_normal as Normal_PDF
 
 """
 Testing for SMC_OPT
-P.L.Green
+
+P.L.Green and A.Lee
 """
 
 # Define target distribution

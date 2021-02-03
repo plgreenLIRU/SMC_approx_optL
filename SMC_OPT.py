@@ -6,7 +6,8 @@ from scipy import linalg
 """
 A class of SMC sampler that builds on the SMC base class by allowing a
 Gaussian approximation of the optimum L-kernel.
-P.L.Green
+
+P.L.Green & A.Lee
 """
 
 
