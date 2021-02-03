@@ -21,20 +21,18 @@ p = Normal_PDF(mean=np.repeat(1, D), cov=np.eye(D))
 # Define initial proposal
 q0 = Normal_PDF(mean=np.zeros(D), cov=np.eye(D))  
 
-# Define proposal as being Gaussian, centered on x_cond, with identity 
-# covariance matrix
+# Define proposal as being Gaussian, centered on x_cond
 q = Q_Proposal()
 q.logpdf = lambda x, x_cond : -0.5 * (x - x_cond).T @ (x - x_cond)
-q.rvs = lambda x_cond : x_cond + np.random.randn(D)
+q.rvs = lambda x_cond : x_cond + 1 * np.random.randn(D)
 
-# Define L-kernel as being Gaussian, centered on x_cond, with identity 
-# covariance matrix
+# Define L-kernel as being Gaussian, centered on x_cond
 L = L_Kernel()
 L.logpdf = lambda x, x_cond : -0.5 * (x - x_cond).T @ (x - x_cond)
-L.rvs = lambda x_cond : x_cond + np.random.randn(D)
+L.rvs = q.rvs
 
 # No. samples and iterations
-N = 500
+N = 1000
 K = 50
 
 # SMC sampler with user-defined L-kernel
