@@ -54,20 +54,10 @@ def test_sampler():
     # Check mean estimates
     assert np.allclose(smc_opt.mean_estimate_EES[-1], p.mean, atol=0.1)
     assert np.allclose(smc_opt_qr.mean_estimate_EES[-1], p.mean, atol=0.1)
-    
+
     # Check covariance estimates
-    assert np.allclose(smc_opt.var_estimate_EES[-1][0][0], p.cov[0][0],
-                       atol=0.2)
-    assert np.allclose(smc_opt.var_estimate_EES[-1][1][1], p.cov[1][1],
-                       atol=0.2)
-    assert np.allclose(smc_opt.var_estimate_EES[-1][0][1], p.cov[0][1],
-                       atol=0.2)
-    assert np.allclose(smc_opt_qr.var_estimate_EES[-1][0][0], p.cov[0][0],
-                       atol=0.2)
-    assert np.allclose(smc_opt_qr.var_estimate_EES[-1][1][1], p.cov[1][1],
-                       atol=0.2)
-    assert np.allclose(smc_opt_qr.var_estimate_EES[-1][0][1], p.cov[0][1],
-                       atol=0.2)
+    assert np.allclose(smc_opt.var_estimate_EES[-1], p.cov, atol=0.2)
+    assert np.allclose(smc_opt_qr.var_estimate_EES[-1], p.cov, atol=0.2)
 
 def test_Neff():
     """ We'd expect that, on average, our SMC with optimum L-kernel should
