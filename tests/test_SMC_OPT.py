@@ -10,19 +10,19 @@ Testing for SMC_OPT
 P.L.Green
 """
 
-# Define target distribution 
+# Define target distribution
 p = Normal_PDF(mean=np.array([3.0, 2.0]), cov=np.eye(2))
 
 # Define initial proposal
-q0 = Normal_PDF(mean=np.zeros(2), cov=np.eye(2))  
+q0 = Normal_PDF(mean=np.zeros(2), cov=np.eye(2))
 
-# Define proposal as being Gaussian, centered on x_cond, with identity 
+# Define proposal as being Gaussian, centered on x_cond, with identity
 # covariance matrix
 q = Q_Proposal()
 q.logpdf = lambda x, x_cond : -0.5 * (x - x_cond).T @ (x - x_cond)
 q.rvs = lambda x_cond : x_cond + np.random.randn(2)
 
-# Define L-kernel as being Gaussian, centered on x_cond, with identity 
+# Define L-kernel as being Gaussian, centered on x_cond, with identity
 # covariance matrix
 L = L_Kernel()
 L.logpdf = lambda x, x_cond : -0.5 * (x - x_cond).T @ (x - x_cond)
@@ -43,12 +43,10 @@ def test_sampler():
     """ For this simple example, we test that the SMC estimates of target mean
     and variance are reasonably close to the truth.
     """
-    # SMC sampler with user defined L
-    smc.generate_samples()
 
     # SMC sampler with approximately optimum L-kernel
     smc_opt.generate_samples()
-    
+
     # SMC sampler with approximately optimum L-kernel with QR method
     smc_opt_qr.generate_samples()
 
