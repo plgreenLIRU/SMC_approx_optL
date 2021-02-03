@@ -30,7 +30,7 @@ L.rvs = lambda x_cond : x_cond + np.random.randn(2)
 
 # No. samples and iterations
 N = 1000
-K = 500
+K = 50
 
 # SMC sampler with user-defined L-kernel
 smc = SMC_BASE(N=N, D=2, p=p, q0=q0, K=K, q=q, L=L)
@@ -50,15 +50,23 @@ def test_sampler():
     # SMC sampler with approximately optimum L-kernel with QR method
     smc_opt_qr.generate_samples()
 
-    # Check estimates
+    # Check mean estimates
     assert np.allclose(smc_opt.mean_estimate_EES[-1], p.mean, atol=0.1)
+    assert np.allclose(smc_opt_qr.mean_estimate_EES[-1], p.mean, atol=0.1)
+    
+    # Check covariance estimates
     assert np.allclose(smc_opt.var_estimate_EES[-1][0][0], p.cov[0][0],
                        atol=0.2)
     assert np.allclose(smc_opt.var_estimate[-1][1][1], p.cov[1][1],
                        atol=0.2)
     assert np.allclose(smc_opt.var_estimate[-1][0][1], p.cov[0][1],
                        atol=0.2)
-
+    assert np.allclose(smc_opt_qr.var_estimate_EES[-1][0][0], p.cov[0][0],
+                       atol=0.2)
+    assert np.allclose(smc_opt_qr.var_estimate[-1][1][1], p.cov[1][1],
+                       atol=0.2)
+    assert np.allclose(smc_opt_qr.var_estimate[-1][0][1], p.cov[0][1],
+                       atol=0.2)
 
 def test_Neff():
     """ We'd expect that, on average, our SMC with optimum L-kernel should
