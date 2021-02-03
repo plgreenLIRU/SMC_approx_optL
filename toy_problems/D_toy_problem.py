@@ -67,9 +67,6 @@ for i in range(D):
                label='Optimum L-kernel (QR)')
     if i == 0:
         ax[i].legend(loc='upper left', bbox_to_anchor=(1, 1))
-    ax[i].set_title('(a)')
-    ax[i].set_xlabel('Iteration')
-    ax[i].set_ylabel('E[$x_1$]')
 
 plt.tight_layout()
 
