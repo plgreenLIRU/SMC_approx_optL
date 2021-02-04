@@ -2,6 +2,7 @@ import numpy as np
 from SMC_BASE import *
 from scipy.stats import multivariate_normal as Normal_PDF
 from scipy import linalg
+from sklearn.decomposition import PCA
 
 """
 A class of SMC sampler that builds on the SMC base class by allowing a
@@ -13,10 +14,10 @@ P.L.Green & A.Lee
 
 class SMC_OPT(SMC_BASE):
 
-    def __init__(self, N, D, p, q0, K, q, QR_PCA = False, t = None):
+    def __init__(self, N, D, p, q0, K, q, PCA = None, t = None):
         """ Initialiser class method
         """
-        self.QR_PCA = QR_PCA
+        self.PCA = PCA
         self.t = t
         # Initiate standard SMC sampler but with no L-kernel defined
         super().__init__(N, D, p, q0, K, q, L=None)
@@ -24,19 +25,24 @@ class SMC_OPT(SMC_BASE):
     def find_optL(self, x, x_new):
         """ Generate a Gaussian approximation of the optimum L-kernel.
         """
-
-
-        if self.QR_PCA == True:
+        
+        
+        if self.PCA == 'eigh':
             K1 = np.cov(x.T)
-            V, Phi = linalg.eigh(K1, subset_by_index=([self.D-self.t,
-                                                       self.D-1]))
+            V, Phi = linalg.eigh(K1)
             Phi = np.flip(Phi, 1)
+            Phi = Phi[:, 0:self.t]
             Z1 = x @ Phi
 
             K2 = np.cov(x_new.T)
+
             U, Theta = linalg.eigh(K2, subset_by_index=([self.D-self.t,
                                                          self.D-1]))
+
+            U, Theta = linalg.eigh(K2)
+
             Theta = np.flip(Theta, 1)
+            Theta = Theta[:, 0: self.t]
             Z2 = x_new @ Theta
 
             Z3 = np.hstack([Z1,Z2])
@@ -49,6 +55,58 @@ class SMC_OPT(SMC_BASE):
             Sigma_X = A @ K @ A.T + 0.001 ** 2 * np.eye(2 * self.D)
             mu_X = A @ mu
 
+        else:
+            X = np.hstack([x, x_new])
+            Sigma_X = np.cov(np.transpose(X))
+            mu_X = np.mean(X, axis=0)
+            
+        if self.PCA == 'naive':
+            K1 = np.cov(x.T)
+            Q1 = np.eye(self.D)
+            for i in range(500):
+                Q, R = np.linalg.qr(K1)
+                Q1 = Q1 @ Q
+                K1 = R @ Q
+            Phi = Q1[:, 0:self.t]
+            Z1 = x @ Phi
+            
+            K2 = np.cov(x_new.T)
+            Q2 = np.eye(self.D)
+            for i in range(500):
+                Q, R = np.linalg.qr(K2)
+                Q2 = Q2 @ Q
+                K2 = R @ Q
+            Theta = Q1[:, 0:self.t]
+            Z2 = x_new @ Theta
+            
+            Z3 = np.hstack([Z1,Z2])
+            K = np.cov(Z3.T)
+            mu = np.mean(Z3, axis = 0)
+            
+            A = np.zeros((2 * self.D, 2 * self.t))
+            A[0:self.D, 0:self.t] = Phi
+            A[self.D: 2 * self.D, self.t: 2 * self.t] = Theta
+            Sigma_X = A @ K @ A.T + 0.001 ** 2 * np.eye(2 * self.D)
+            mu_X = A @ mu
+        else:
+            X = np.hstack([x, x_new])
+            Sigma_X = np.cov(np.transpose(X))
+            mu_X = np.mean(X, axis=0)
+            
+        if self.PCA == 'SVD':
+            pca = PCA(n_components = self.t, svd_solver='full')
+            Z1 = pca.fit_transform(x)
+            Phi = pca.components_.T
+            Z2 = pca.fit_transform(x_new)
+            Theta = pca.components_.T
+            Z3 = np.hstack([Z1,Z2])
+            K = np.cov(Z3.T)
+            mu = np.mean(Z3, axis = 0)
+            A = np.zeros((2 * self.D, 2 * self.t))
+            A[0:self.D, 0:self.t] = Phi
+            A[self.D: 2 * self.D, self.t: 2 * self.t] = Theta
+            Sigma_X = A @ K @ A.T + 0.001 ** 2 * np.eye(2 * self.D)
+            mu_X = A @ mu
         else:
             X = np.hstack([x, x_new])
             Sigma_X = np.cov(np.transpose(X))
