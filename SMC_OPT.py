@@ -35,12 +35,7 @@ class SMC_OPT(SMC_BASE):
             Z1 = x @ Phi
 
             K2 = np.cov(x_new.T)
-
-            U, Theta = linalg.eigh(K2, subset_by_index=([self.D-self.t,
-                                                         self.D-1]))
-
             U, Theta = linalg.eigh(K2)
-
             Theta = np.flip(Theta, 1)
             Theta = Theta[:, 0: self.t]
             Z2 = x_new @ Theta
@@ -55,12 +50,8 @@ class SMC_OPT(SMC_BASE):
             Sigma_X = A @ K @ A.T + 0.001 ** 2 * np.eye(2 * self.D)
             mu_X = A @ mu
 
-        else:
-            X = np.hstack([x, x_new])
-            Sigma_X = np.cov(np.transpose(X))
-            mu_X = np.mean(X, axis=0)
             
-        if self.PCA == 'naive':
+        elif self.PCA == 'naive':
             K1 = np.cov(x.T)
             Q1 = np.eye(self.D)
             for i in range(500):
@@ -88,12 +79,8 @@ class SMC_OPT(SMC_BASE):
             A[self.D: 2 * self.D, self.t: 2 * self.t] = Theta
             Sigma_X = A @ K @ A.T + 0.001 ** 2 * np.eye(2 * self.D)
             mu_X = A @ mu
-        else:
-            X = np.hstack([x, x_new])
-            Sigma_X = np.cov(np.transpose(X))
-            mu_X = np.mean(X, axis=0)
             
-        if self.PCA == 'SVD':
+        elif self.PCA == 'SVD':
             pca = PCA(n_components = self.t, svd_solver='full')
             Z1 = pca.fit_transform(x)
             Phi = pca.components_.T

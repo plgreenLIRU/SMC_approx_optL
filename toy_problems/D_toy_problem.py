@@ -11,9 +11,9 @@ Estimating the optimum L-kernel for a D-dimensional toy problem.
 
 P.L.Green
 """
-
+np.random.seed(10)
 # Dimension of problem
-D = 8
+D = 4
 
 # Define target distribution 
 p = Normal_PDF(mean=np.repeat(1, D), cov=np.eye(D))
@@ -44,15 +44,15 @@ smc_optL = SMC_OPT(N=N, D=D, p=p, q0=q0, K=K, q=q)
 smc_optL.generate_samples()
 
 # SMC sampler with optimum L-kernel QR implementation 
-smc_optL_qr = SMC_OPT(N=N, D=D, p=p, q0=q0, K=K, q=q, PCA = 'naive', t = 3)
+smc_optL_qr = SMC_OPT(N=N, D=D, p=p, q0=q0, K=K, q=q, PCA = 'naive', t = 4)
 smc_optL_qr.generate_samples()
 
 # SMC sampler with optimum L-kernel eigh implementation 
-smc_optL_eigh = SMC_OPT(N=N, D=D, p=p, q0=q0, K=K, q=q, PCA = 'eigh', t = 3)
+smc_optL_eigh = SMC_OPT(N=N, D=D, p=p, q0=q0, K=K, q=q, PCA = 'eigh', t = 4)
 smc_optL_eigh.generate_samples()
 
 # SMC sampler with optimum L-kernel PCA implementation 
-smc_optL_svd = SMC_OPT(N=N, D=D, p=p, q0=q0, K=K, q=q, PCA = 'svd', t = 3)
+smc_optL_svd = SMC_OPT(N=N, D=D, p=p, q0=q0, K=K, q=q, PCA = 'svd', t = 4)
 smc_optL_svd.generate_samples()
 
 # Print no. of times resampling occurred
