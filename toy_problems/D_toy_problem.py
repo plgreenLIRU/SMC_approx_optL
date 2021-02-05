@@ -59,12 +59,14 @@ smc_optL_svd.generate_samples()
 print('No. resampling (SMC)', len(smc.resampling_points))
 print('No. resampling (SMC optL)', len(smc_optL.resampling_points))
 print('No. resampling (SMC optL (QR))', len(smc_optL_qr.resampling_points))
+
 print('No. resampling (SMC optL (eigh))', len(smc_optL_eigh.resampling_points))
 print('No. resampling (SMC optL (PCA))', len(smc_optL_svd.resampling_points))
 
 # Plots of estimated means
 fig, ax = plt.subplots(nrows=D, ncols=1)
 fig.subplots_adjust(hspace=0.0)
+
 for i in range(D):
     ax[i].plot(np.repeat(1, K), 'lime', linewidth=3.0, 
                label='True value')
@@ -78,6 +80,7 @@ for i in range(D):
                label='Optimum L-kernel (eigh)')
     ax[i].plot(smc_optL_svd.mean_estimate_EES[:, i], 'g--', 
                label='Optimum L-kernel (PCA)')
+
     if i == 0:
         ax[i].legend(loc='upper left', bbox_to_anchor=(1, 1))
 
@@ -91,6 +94,7 @@ for i in range(2):
     ax[i].plot(smc_optL_qr.Neff / smc.N, 'b', label='Optimum L-kernel (QR)')
     ax[i].plot(smc_optL_eigh.Neff / smc.N, 'm--', label='Optimum L-kernel (eigh)')
     ax[i].plot(smc_optL_svd.Neff / smc.N, 'g--', label='Optimum L-kernel (PCA)')
+
     ax[i].set_xlabel('Iteration')
     ax[i].set_ylabel('$N_{eff} / N$')
     if i == 0:
