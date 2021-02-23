@@ -4,7 +4,7 @@ import sys
 sys.path.append('..')  # noqa
 from scipy.stats import multivariate_normal as Normal_PDF
 from GMM_PDF import *
-from SMC_BASE import *
+from SMC_BASE import SMC, Target_Base, Q0_Base, Q_Base, L_Base
 from SMC_OPT import *
 from SMC_OPT_GMM import *
 
@@ -15,43 +15,62 @@ optimum L-kernel.
 P.L.Green
 """
 
-# Define target distribution
-p = Target()
-p.pdf = GMM_PDF(D=1,
-                means=[np.array(-3), np.array(3)],
-                vars=[np.array(1), np.array(1)],
-                weights=[0.5, 0.5],
-                n_components=2)
-def p_pdf(x):
-    return p.pdf.logpdf(x)
-p.logpdf = p_pdf    
+class Target(Target_Base):
+    """ Define target """
+    
+    def __init__(self):
+        self.pdf = GMM_PDF(D=1,
+                           means=[np.array(-3), np.array(3)],
+                           vars=[np.array(1), np.array(1)],
+                           weights=[0.5, 0.5],
+                           n_components=2)
+                           
+    def logpdf(self, x):
+        return self.pdf.logpdf(x)
 
-# Define initial proposal
-q0 = Normal_PDF(mean=0, cov=3)
 
-# Define proposal as being Gaussian, centered on x_cond, with variance
-# equal to 0.1
-q = Q_Proposal()
-q.var = 0.1
-q.std = np.sqrt(q.var)
-q.logpdf = lambda x, x_cond : -1/(2*q.var) * (x - x_cond)**2
-q.rvs = lambda x_cond : x_cond + q.std * np.random.randn()
+class Q0(Q0_Base):
+    """ Define initial proposal """
+    
+    def __init__(self):
+        self.pdf = Normal_PDF(mean=0, cov=3)
+        
+    def logpdf(self, x):
+        return self.pdf.logpdf(x)
+        
+    def rvs(self, size):
+        return self.pdf.rvs(size)
 
-# Define L-kernel as being Gaussian, centered on x_cond, with variance
-# equal to 0.1
-L = L_Kernel()
-L.var = 0.1
-L.std = np.sqrt(L.var)
-L.logpdf = lambda x, x_cond : -1/(2*L.var) * (x - x_cond)**2
+
+class Q(Q_Base):
+    """ Define general proposal as being Gaussian, centered on x_cond, 
+        with variance equal to 0.1
+    """
+    
+    def logpdf(self, x, x_cond):
+        return -1/(2*0.1) * (x - x_cond)**2
+        
+    def rvs(self, x_cond):
+        return x_cond + np.sqrt(0.1) * np.random.randn()
+
+
+class L(L_Base):
+    """ Define L-kernel as being Gaussian, centered on x_cond, 
+        with variance equal to 0.1
+    """
+    
+    def logpdf(self, x, x_cond):
+        return -1/(2*0.1) * (x - x_cond)**2
 
 # No. samples and iterations
 N = 500
 K = 1000
 
 # SMC samplers
-smc = SMC_BASE(N=N, D=1, p=p, q0=q0, K=K, q=q, L=L)
-smc_opt = SMC_OPT(N=N, D=1, p=p, q0=q0, K=K, q=q)
-smc_opt_gmm = SMC_OPT_GMM(N=N, D=1, p=p, q0=q0, K=K, q=q, L_components=2)
+smc = SMC(N, 1, Target(), Q0(), K, Q(), L())
+smc_opt = SMC_OPT(N, 1, Target(), Q0(), K, Q())
+smc_opt_gmm = SMC_OPT_GMM(N, 1, Target(), Q0(), K, 
+                          Q(), L_components=2)
 smc.generate_samples()
 smc_opt.generate_samples()
 smc_opt_gmm.generate_samples()

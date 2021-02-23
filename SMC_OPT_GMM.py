@@ -1,5 +1,5 @@
 import numpy as np
-from SMC_BASE import *
+from SMC_BASE import SMC, L_Base
 from sklearn.mixture import GaussianMixture as GMM_sk
 from GMM_Conditional import *
 
@@ -11,7 +11,7 @@ P.L.Green
 """
 
 
-class SMC_OPT_GMM(SMC_BASE):
+class SMC_OPT_GMM(SMC):
 
     def __init__(self, N, D, p, q0, K, q, L_components):
         """ Initialiser class method
