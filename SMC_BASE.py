@@ -119,6 +119,9 @@ class SMC():
     q : general proposal distribution instance
 
     L : L-kernel instance
+    
+    sampling : 'batch' or 'singular' approach (where singular should
+        be better for high dimensional problems). 
 
     Methods
     -------
@@ -411,6 +414,9 @@ class SMC():
         p_logpdf_x : log target evaluations associated with x
 
         p_logpdf_x_new : log target evaluations associated with x_new
+        
+        d : current dimension we are updating (only needed if singular
+            sampling is being used). 
 
         Returns
         -------
