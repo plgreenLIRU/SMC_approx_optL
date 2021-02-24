@@ -333,7 +333,7 @@ class SMC():
                 # If we are using a batched sampling approach, we
                 # propose new samples, across all dimensions
                 for i in range(self.N):
-                    x_new[i] = self.propose_sample(x_cond=x[i])
+                    x_new[i] = self.q.rvs(x_cond=x[i])
 
                 # Make sure evaluations of likelihood are vectorised
                 p_logpdf_x_new = self.p.logpdf(x_new)
@@ -362,7 +362,7 @@ class SMC():
 
                     x_new = np.copy(x)
                     for i in range(self.N):
-                        x_new[i, d] = self.propose_sample(x[i, d])
+                        x_new[i, d] = self.q.rvs(x[i, d])
 
                     # Make sure evaluations of likelihood are vectorised
                     p_logpdf_x_new = self.p.logpdf(x_new)
@@ -391,28 +391,6 @@ class SMC():
         # Final quantities to be returned
         self.x = x
         self.logw = logw
-
-    def propose_sample(self, x_cond):
-        """
-        Description
-        -----------
-        Method used specifically to propose new samples, conditional on
-            x_cond. Could probably remove this in the future.
-
-        Parameters
-        ----------
-        x_cond : conditional value of x
-
-        Returns
-        -------
-        x_new : new sample
-
-        """
-
-        # New sample
-        x_new = self.q.rvs(x_cond=x_cond)
-
-        return x_new
 
     def update_weights(self, x, x_new, logw, p_logpdf_x,
                        p_logpdf_x_new, d=None):
