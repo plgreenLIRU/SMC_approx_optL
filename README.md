@@ -22,7 +22,9 @@ V1 : originally submitted with first version of the paper (https://arxiv.org/abs
 
 V2 : now uses abstract methods to make it more clear what the user needs to define.
 
-V3 : added example of the approach applied to a single-degree-of-freedom system. 
+V3 : added example of the approach applied to a single-degree-of-freedom system.
+
+V4 : now uses abstract classes and random seed is fixed for tests.
 
 ## Contact
 Queries to: p.l.green@liverpool.ac.uk
