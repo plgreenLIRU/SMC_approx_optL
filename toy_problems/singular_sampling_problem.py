@@ -14,7 +14,10 @@ P.L.Green
 """
 
 # Dimension of problem
-D = 5
+D = 10
+
+# Variance of general proposal
+v = 0.5
 
 class Target(Target_Base):
     """ Define target """
@@ -44,33 +47,33 @@ class Q_1D(Q_Base):
     """ Define general (1D) proposal """
 
     def logpdf(self, x, x_cond):
-        return  -0.5 * (x - x_cond)**2
+        return  -1/(2 * v) * (x - x_cond)**2
 
     def rvs(self, x_cond):
-        return x_cond + np.random.randn(1)
+        return x_cond + np.sqrt(v) * np.random.randn(1)
 
 
 class L_1D(L_Base):
     """ Define (1D) L-kernel """
 
     def logpdf(self, x, x_cond):
-        return -0.5 * (x - x_cond)**2
+        return  -1/(2 * v) * (x - x_cond)**2
 
 class Q(Q_Base):
     """ Define general proposal """
     
     def logpdf(self, x, x_cond):
-        return  -0.5 * (x - x_cond).T @ (x - x_cond)
+        return  -1/(2 * v) * (x - x_cond).T @ (x - x_cond)
         
     def rvs(self, x_cond):
-        return x_cond + np.random.randn(D)
+        return x_cond + np.sqrt(v) * np.random.randn(D)
 
 
 class L(L_Base):
     """ Define L-kernel """
     
     def logpdf(self, x, x_cond):
-        return -0.5 * (x - x_cond).T @ (x - x_cond)
+        return  -1/(2 * v) * (x - x_cond).T @ (x - x_cond)
 
 p = Target()
 q0 = Q0()
@@ -81,7 +84,7 @@ l = L()
 
 # No. samples and iterations
 N = 1000
-K = 3
+K = 50
 
 # Standard SMC sampler
 smc = SMC(N, D, p, q0, K, q, l)
@@ -114,11 +117,11 @@ for i in range(2):
     ax[i].set_ylabel('$N_{eff} / N$')
     if i == 0:
         ax[i].set_title('(a)')
-        ax[i].legend(loc='upper left', bbox_to_anchor=(1, 1))
+        ##ax[i].legend(loc='upper left', bbox_to_anchor=(1, 1))
     elif i == 1:
         ax[i].set_title('(b)')
         ax[i].set_xlim(0, 20)
     ax[i].set_ylim(0, 1)
-##plt.tight_layout()
+plt.tight_layout()
 
 plt.show()
