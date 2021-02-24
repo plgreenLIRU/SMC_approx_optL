@@ -1,5 +1,4 @@
 import numpy as np
-import copy
 from abc import abstractmethod, ABC
 
 class Target_Base(ABC):
@@ -356,8 +355,8 @@ class SMC():
 
             # Update samples, log weights, and posterior evaluations
             x = np.copy(x_new)
-            logw = copy.deepcopy(logw_new)
-            p_logpdf_x = copy.deepcopy(p_logpdf_x_new)
+            logw = np.copy(logw_new)
+            p_logpdf_x = np.copy(p_logpdf_x_new)
 
         # Final quantities to be returned
         self.x = x
