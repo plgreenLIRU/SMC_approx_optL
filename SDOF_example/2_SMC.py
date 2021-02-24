@@ -81,19 +81,22 @@ class L(L_Base):
         return -0.5 * (x - x_cond).T @ self.inv_cov @ (x - x_cond)
 
 
-# Define log target distribution
+
 p = SDOF_Log_Posterior(F, y_obs, Q0(), sdof)
+q0 = Q0()
+q = Q()
+l = L()
 
 # No. samples and iterations
 N = 500
 K = 50
 
 # SMC sampler with user-defined L-kernel
-smc = SMC(N, 3, p, Q0(), K, Q(), L())
+smc = SMC(N, 3, p, q0, K, q, l)
 smc.generate_samples()
 
 # SMC sampler with optimum L-kernel
-smc_optL = SMC_OPT(N, 3, p, Q0(), K, Q())
+smc_optL = SMC_OPT(N, 3, p, q0, K, q)
 smc_optL.generate_samples()
 
 # Plot SMC results (estimates of means)

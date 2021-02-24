@@ -54,16 +54,21 @@ class L(L_Base):
         return -0.5 * (x - x_cond).T @ (x - x_cond)
 
 
+p = Target()
+q0 = Q0()
+q = Q()
+l = L()
+
 # No. samples and iterations
 N = 500
 K = 100
 
 # SMC sampler with user-defined L-kernel
-smc = SMC(N, 2, Target(), Q0(), K, Q(), L())
+smc = SMC(N, 2, p, q0, K, q, l)
 smc.generate_samples()
 
 # SMC sampler with optimum L-kernel
-smc_optL = SMC_OPT(N, 2, Target(), Q0(), K, Q())
+smc_optL = SMC_OPT(N, 2, p, q0, K, q)
 smc_optL.generate_samples()
 
 # Print no. of times resampling occurred

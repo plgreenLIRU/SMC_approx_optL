@@ -62,15 +62,20 @@ class L(L_Base):
     def logpdf(self, x, x_cond):
         return -1/(2*0.1) * (x - x_cond)**2
 
+p = Target()
+q0 = Q0()
+q = Q()
+l = L()
+
 # No. samples and iterations
 N = 500
 K = 1000
 
 # SMC samplers
-smc = SMC(N, 1, Target(), Q0(), K, Q(), L())
-smc_opt = SMC_OPT(N, 1, Target(), Q0(), K, Q())
-smc_opt_gmm = SMC_OPT_GMM(N, 1, Target(), Q0(), K, 
-                          Q(), L_components=2)
+smc = SMC(N, 1, p, q0, K, q, l)
+smc_opt = SMC_OPT(N, 1, p, q0, K, q)
+smc_opt_gmm = SMC_OPT_GMM(N, 1, p, q0, K, 
+                          q, L_components=2)
 smc.generate_samples()
 smc_opt.generate_samples()
 smc_opt_gmm.generate_samples()
