@@ -329,9 +329,9 @@ class SMC():
 
             # Generate new samples
             if self.sampling == 'batch':
+
                 # If we are using a batched sampling approach, we
                 # propose new samples, across all dimensions
-
                 for i in range(self.N):
                     x_new[i] = self.propose_sample(x_cond=x[i])
 
@@ -349,14 +349,44 @@ class SMC():
                         logw_new[i] = -np.inf
                     elif logw[i] == -np.inf:
                         logw_new[i] = -np.inf
-                        
-            if self.sampling == 'singular':
-                pass
 
-            # Update samples, log weights, and posterior evaluations
-            x = np.copy(x_new)
-            logw = np.copy(logw_new)
-            p_logpdf_x = np.copy(p_logpdf_x_new)
+                # Update samples, log weights, and posterior evaluations
+                x = np.copy(x_new)
+                logw = np.copy(logw_new)
+                p_logpdf_x = np.copy(p_logpdf_x_new)
+
+            if self.sampling == 'singular':
+
+                # Loop to update one dimension at a time
+                for d in range(self.D):
+
+                    x_new = np.copy(x)
+                    for i in range(self.N):
+                        x_new[i, d] = self.propose_sample(x[i, d])
+
+                    # Make sure evaluations of likelihood are vectorised
+                    p_logpdf_x_new = self.p.logpdf(x_new)
+
+                    # Update log weights
+                    logw_new = self.update_weights(x, x_new, logw,
+                                                   p_logpdf_x,
+                                                   p_logpdf_x_new, d)
+
+                    # Find normalised weights
+                    wn = self.normalise_weights(logw_new)
+
+                    # Resample if effective sample size is below threshold
+                    Neff = 1 / np.sum(np.square(wn))
+                    if Neff < self.N/2:
+                        [x_new,
+                         p_logpdf_x_new,
+                         wn] = self.resample(x_new, p_logpdf_x_new, wn)
+                        logw = np.log(wn)
+
+                    # Update samples, log weights, and posterior evaluations
+                    x = np.copy(x_new)
+                    logw = np.copy(logw_new)
+                    p_logpdf_x = np.copy(p_logpdf_x_new)
 
         # Final quantities to be returned
         self.x = x
@@ -384,7 +414,8 @@ class SMC():
 
         return x_new
 
-    def update_weights(self, x, x_new, logw, p_logpdf_x, p_logpdf_x_new):
+    def update_weights(self, x, x_new, logw, p_logpdf_x,
+                       p_logpdf_x_new, d=None):
         """
         Description
         -----------
@@ -413,11 +444,19 @@ class SMC():
         logw_new = np.vstack(np.zeros(self.N))
 
         # Find new weights
-        for i in range(self.N):
-            logw_new[i] = (logw[i] +
-                           p_logpdf_x_new[i] -
-                           p_logpdf_x[i] +
-                           self.L.logpdf(x=x[i], x_cond=x_new[i]) -
-                           self.q.logpdf(x=x_new[i], x_cond=x[i]))
+        if self.sampling == 'batch':
+            for i in range(self.N):
+                logw_new[i] = (logw[i] +
+                               p_logpdf_x_new[i] -
+                               p_logpdf_x[i] +
+                               self.L.logpdf(x[i], x_new[i]) -
+                               self.q.logpdf(x_new[i], x[i]))
+        if self.sampling == 'singular':
+            for i in range(self.N):
+                logw_new[i] = (logw[i] +
+                               p_logpdf_x_new[i] -
+                               p_logpdf_x[i] +
+                               self.L.logpdf(x[i, d], x_new[i, d]) -
+                               self.q.logpdf(x_new[i, d], x[i, d]))
 
         return logw_new
