@@ -15,6 +15,7 @@ optimum L-kernel.
 P.L.Green
 """
 
+np.random.seed(42)
 
 class Target(Target_Base):
     """ Define target """
