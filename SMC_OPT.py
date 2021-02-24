@@ -1,58 +1,37 @@
 import numpy as np
 from SMC_BASE import *
 from scipy.stats import multivariate_normal as Normal_PDF
-from scipy import linalg
 
 """
 A class of SMC sampler that builds on the SMC base class by allowing a
 Gaussian approximation of the optimum L-kernel.
 
-P.L.Green & A.Lee
+P.L.Green
 """
 
 
 class SMC_OPT(SMC_BASE):
 
-    def __init__(self, N, D, p, q0, K, q, QR_PCA = False, t = None):
+    def __init__(self, N, D, p, q0, K, q):
         """ Initialiser class method
+
         """
-        self.QR_PCA = QR_PCA
-        self.t = t
+
         # Initiate standard SMC sampler but with no L-kernel defined
         super().__init__(N, D, p, q0, K, q, L=None)
 
     def find_optL(self, x, x_new):
         """ Generate a Gaussian approximation of the optimum L-kernel.
+
         """
 
+        # Collect x and x_new together into X
+        X = np.hstack([x, x_new])
 
-        if self.QR_PCA == True:
-            K1 = np.cov(x.T)
-            V, Phi = linalg.eigh(K1, subset_by_index=([self.D-self.t,
-                                                       self.D-1]))
-            Phi = np.flip(Phi, 1)
-            Z1 = x @ Phi
-
-            K2 = np.cov(x_new.T)
-            U, Theta = linalg.eigh(K2, subset_by_index=([self.D-self.t,
-                                                         self.D-1]))
-            Theta = np.flip(Theta, 1)
-            Z2 = x_new @ Theta
-
-            Z3 = np.hstack([Z1,Z2])
-            K = np.cov(Z3.T)
-            mu = np.mean(Z3, axis = 0)
-
-            A = np.zeros((2 * self.D, 2 * self.t))
-            A[0:self.D, 0:self.t] = Phi
-            A[self.D: 2 * self.D, self.t: 2 * self.t] = Theta
-            Sigma_X = A @ K @ A.T + 0.001 ** 2 * np.eye(2 * self.D)
-            mu_X = A @ mu
-
-        else:
-            X = np.hstack([x, x_new])
-            Sigma_X = np.cov(np.transpose(X))
-            mu_X = np.mean(X, axis=0)
+        # Directly estimate the mean and
+        # covariance matrix of X
+        mu_X = np.mean(X, axis=0)
+        Sigma_X = np.cov(np.transpose(X))
 
         # Find mean of joint distribution (p(x, x_new))
         mu_x, mu_xnew = mu_X[0:self.D], mu_X[self.D:2 * self.D]
@@ -76,7 +55,6 @@ class SMC_OPT(SMC_BASE):
             # Variance of approximately optimal L-kernel
             Sigma = (Sigma_x_x - Sigma_x_xnew @
                      np.linalg.inv(Sigma_xnew_xnew) @ Sigma_xnew_x)
-            self.Sigma = Sigma
 
             # Log det covariance matrix
             sign, logdet = np.linalg.slogdet(Sigma)
@@ -96,6 +74,7 @@ class SMC_OPT(SMC_BASE):
 
     def update_weights(self, x, x_new, logw, p_log_pdf_x, p_log_pdf_x_new):
         """ Overwrites the method in the base-class
+
         """
 
         # Initialise arrays
