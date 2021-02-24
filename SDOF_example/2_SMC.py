@@ -7,7 +7,7 @@ import dill
 from scipy.stats import multivariate_normal as Normal_PDF
 from scipy.stats import gamma as Gamma_PDF
 from SDOF_Log_Posterior_Class import SDOF_Log_Posterior
-from SMC_BASE import *
+from SMC_BASE import SMC, Q0_Base, Q_Base, L_Base
 from SMC_OPT import *
 
 # Load training data and model
@@ -16,68 +16,84 @@ file = open(file_name, 'rb')
 [F, y_true, y_obs, t, sdof, sigma] = dill.load(file)
 file.close()
 
-# Define prior
-q0 = Q0_Proposal()
-q0.p_k = Normal_PDF(mean=3, cov=0.5)
-q0.p_c = Gamma_PDF(a=1, scale=0.1)
-q0.p_sigma = Gamma_PDF(a=1, scale=0.1)
 
-def q0_rvs(size):
-    k = np.vstack(q0.p_k.rvs(size))
-    c = np.vstack(q0.p_c.rvs(size))
-    sigma = np.vstack(q0.p_sigma.rvs(size))
+class Q0(Q0_Base):
+    """ Define prior """
 
-    return np.hstack([k, c, sigma])
+    def __init__(self):
+        """ Define prior pdfs over stiffness, damping, and
+            noise std.
+        """
 
-def q0_logpdf(x):
+        self.p_k = Normal_PDF(mean=3, cov=0.5)
+        self.p_c = Gamma_PDF(a=1, scale=0.1)
+        self.p_sigma = Gamma_PDF(a=1, scale=0.1)
 
-    # Convert to 2D array if currently 1D
-    if len(np.shape(x))==1:
-        x = np.array([x])
+    def logpdf(self, x):
 
-    # Calculate logpdf
-    logpdf = (q0.p_k.logpdf(x[:, 0]) +
-              q0.p_c.logpdf(x[:, 1]) +
-              q0.p_sigma.logpdf(x[:, 2]))
+        # Convert to 2D array if currently 1D
+        if len(np.shape(x))==1:
+            x = np.array([x])
 
-    return logpdf
+        # Calculate logpdf
+        logpdf = (self.p_k.logpdf(x[:, 0]) +
+                  self.p_c.logpdf(x[:, 1]) +
+                  self.p_sigma.logpdf(x[:, 2]))
 
-q0.rvs = q0_rvs
-q0.logpdf = q0_logpdf
+        return logpdf
 
-# Define L-kernel
-L = L_Kernel()
-L.cov = 0.01 * np.array([[0.01, 0, 0],
-                         [0, 0.001, 0],
-                         [0, 0, 0.001]])
-L.inv_cov = np.linalg.inv(L.cov)
-L.logpdf = lambda x, x_cond : (-0.5 * (x - x_cond).T @
-                               L.inv_cov @ (x - x_cond))
+    def rvs(self, size):
 
-# Define proposal
-q = Q_Proposal()
-q.cov = 0.01 * np.array([[0.01, 0, 0],
-                         [0, 0.001, 0],
-                         [0, 0, 0.001]])
-q.inv_cov = np.linalg.inv(q.cov)
-q.logpdf = lambda x, x_cond : (-0.5 * (x - x_cond).T @
-                               q.inv_cov @ (x - x_cond))
-q.rvs = lambda x_cond : (x_cond +
-                         np.sqrt(np.diag(q.cov)) * np.random.randn(3))
+        k = np.vstack(self.p_k.rvs(size))
+        c = np.vstack(self.p_c.rvs(size))
+        sigma = np.vstack(self.p_sigma.rvs(size))
+
+        return np.hstack([k, c, sigma])
+
+
+class Q(Q_Base):
+    """ Define general proposal """
+
+    def __init__(self):
+        self.cov = 0.01 * np.array([[0.01, 0, 0],
+                                    [0, 0.001, 0],
+                                    [0, 0, 0.001]])
+        self.inv_cov = np.linalg.inv(self.cov)
+
+    def logpdf(self, x, x_cond):
+        return -0.5 * (x - x_cond).T @ self.inv_cov @ (x - x_cond)
+        
+    def rvs(self, x_cond):
+        return (x_cond +
+                np.sqrt(np.diag(self.cov)) * np.random.randn(3))
+
+
+class L(L_Base):
+    """ Define L-kernel """
+
+    def __init__(self):
+        cov = 0.01 * np.array([[0.01, 0, 0],
+                               [0, 0.001, 0],
+                               [0, 0, 0.001]])
+        self.inv_cov = np.linalg.inv(cov)
+
+    def logpdf(self, x, x_cond):
+        return -0.5 * (x - x_cond).T @ self.inv_cov @ (x - x_cond)
+
 
 # Define log target distribution
-p = SDOF_Log_Posterior(F, y_obs, q0, sdof)
+p = SDOF_Log_Posterior(F, y_obs, Q0(), sdof)
 
 # No. samples and iterations
 N = 500
 K = 50
 
 # SMC sampler with user-defined L-kernel
-smc = SMC_BASE(N, 3, p, q0, K, q, L)
+smc = SMC(N, 3, p, Q0(), K, Q(), L())
 smc.generate_samples()
 
 # SMC sampler with optimum L-kernel
-smc_optL = SMC_OPT(N, 3, p, q0, K, q)
+smc_optL = SMC_OPT(N, 3, p, Q0(), K, Q())
 smc_optL.generate_samples()
 
 # Plot SMC results (estimates of means)
@@ -101,9 +117,9 @@ plt.tight_layout()
 # Plot SMC results (estimates of covariance terms)
 fig, ax = plt.subplots(nrows=3)
 for i in range(3):
-    ax[i].plot(smc.var_estimate_EES[:, i, i], 'k', 
+    ax[i].plot(smc.var_estimate_EES[:, i, i], 'k',
                label='Forward proposal L-kernel')
-    ax[i].plot(smc_optL.var_estimate_EES[:, i, i], 'r', 
+    ax[i].plot(smc_optL.var_estimate_EES[:, i, i], 'r',
                label='Optimal L-kernel')
     ax[i].set_xlabel('Iteration')
     if i == 0:
@@ -112,7 +128,7 @@ for i in range(3):
         ax[i].set_ylabel('Var[$c$]')
     if i == 2:
         ax[i].set_ylabel('Var[$\sigma$]')
-    
+
 ax[0].legend(loc='upper left', bbox_to_anchor=(1, 1))
 plt.tight_layout()
 
