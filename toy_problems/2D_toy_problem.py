@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import sys
 sys.path.append('..')  # noqa
 from scipy.stats import multivariate_normal as Normal_PDF
-from SMC_BASE import *
+from SMC_BASE import SMC, Target_Base, Q0_Base, Q_Base, L_Base
 from SMC_OPT import *
 
 """
@@ -12,34 +12,63 @@ Estimating the optimum L-kernel for a 2D toy problem.
 P.L.Green
 """
 
-# Define target distribution 
-p = Normal_PDF(mean=np.array([3.0, 2.0]), cov=np.eye(2))
 
-# Define initial proposal
-q0 = Normal_PDF(mean=np.zeros(2), cov=np.eye(2))  
+class Target(Target_Base):
+    """ Define target """
 
-# Define proposal as being Gaussian, centered on x_cond, with identity 
-# covariance matrix
-q = Q_Proposal()
-q.logpdf = lambda x, x_cond : -0.5 * (x - x_cond).T @ (x - x_cond)
-q.rvs = lambda x_cond : x_cond + np.random.randn(2)
+    def __init__(self):
+        self.pdf = Normal_PDF(mean=np.array([3.0, 2.0]), cov=np.eye(2))
 
-# Define L-kernel as being Gaussian, centered on x_cond, with identity 
-# covariance matrix
-L = L_Kernel()
-L.logpdf = lambda x, x_cond : -0.5 * (x - x_cond).T @ (x - x_cond)
-L.rvs = lambda x_cond : x_cond + np.random.randn(2)
+    def logpdf(self, x):
+        return self.pdf.logpdf(x)
+
+
+class Q0(Q0_Base):
+    """ Define initial proposal """
+
+    def __init__(self):
+        self.pdf = Normal_PDF(mean=np.zeros(2), cov=np.eye(2))
+
+
+    def logpdf(self, x):
+        return self.pdf.logpdf(x)
+
+    def rvs(self, size):
+        return self.pdf.rvs(size)
+
+
+class Q(Q_Base):
+    """ Define general proposal """
+    
+    def logpdf(self, x, x_cond):
+        return  -0.5 * (x - x_cond).T @ (x - x_cond)
+        
+    def rvs(self, x_cond):
+        return x_cond + np.random.randn(2)
+
+
+class L(L_Base):
+    """ Define L-kernel """
+    
+    def logpdf(self, x, x_cond):
+        return -0.5 * (x - x_cond).T @ (x - x_cond)
+
+
+p = Target()
+q0 = Q0()
+q = Q()
+l = L()
 
 # No. samples and iterations
 N = 500
 K = 100
 
 # SMC sampler with user-defined L-kernel
-smc = SMC_BASE(N=N, D=2, p=p, q0=q0, K=K, q=q, L=L)
+smc = SMC(N, 2, p, q0, K, q, l)
 smc.generate_samples()
 
 # SMC sampler with optimum L-kernel
-smc_optL = SMC_OPT(N=N, D=2, p=p, q0=q0, K=K, q=q)
+smc_optL = SMC_OPT(N, 2, p, q0, K, q)
 smc_optL.generate_samples()
 
 # Print no. of times resampling occurred

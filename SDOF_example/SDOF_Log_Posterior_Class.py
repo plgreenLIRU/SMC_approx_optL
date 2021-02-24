@@ -1,7 +1,7 @@
 import numpy as np
+from SMC_BASE import Target_Base
 
-
-class SDOF_Log_Posterior():
+class SDOF_Log_Posterior(Target_Base):
 
     """
     Description

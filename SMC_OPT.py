@@ -1,5 +1,5 @@
 import numpy as np
-from SMC_BASE import *
+from SMC_BASE import SMC, L_Base
 from scipy.stats import multivariate_normal as Normal_PDF
 
 """
@@ -9,8 +9,13 @@ Gaussian approximation of the optimum L-kernel.
 P.L.Green
 """
 
+class L(L_Base):
+    
+    def logpdf(self, x, x_cond):
+        pass
 
-class SMC_OPT(SMC_BASE):
+
+class SMC_OPT(SMC):
 
     def __init__(self, N, D, p, q0, K, q):
         """ Initialiser class method
@@ -18,7 +23,7 @@ class SMC_OPT(SMC_BASE):
         """
 
         # Initiate standard SMC sampler but with no L-kernel defined
-        super().__init__(N, D, p, q0, K, q, L=None)
+        super().__init__(N, D, p, q0, K, q, L=L())
 
     def find_optL(self, x, x_new):
         """ Generate a Gaussian approximation of the optimum L-kernel.
@@ -69,7 +74,6 @@ class SMC_OPT(SMC_BASE):
 
             return logpdf
 
-        self.L = L_Kernel()
         self.L.logpdf = L_logpdf
 
     def update_weights(self, x, x_new, logw, p_log_pdf_x, p_log_pdf_x_new):

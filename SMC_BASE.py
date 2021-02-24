@@ -1,8 +1,8 @@
 import numpy as np
 import copy
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 
-class Target():
+class Target_Base(ABC):
     """
     Description
     -----------
@@ -12,7 +12,7 @@ class Target():
     """
 
     @abstractmethod
-    def logpdf(x):
+    def logpdf(self, x):
         """
         Description
         -----------
@@ -21,7 +21,7 @@ class Target():
         """
         pass
 
-class Q0_Proposal():
+class Q0_Base(ABC):
     """
     Description
     -----------
@@ -31,16 +31,16 @@ class Q0_Proposal():
     """
     
     @abstractmethod
-    def logpdf(x):
+    def logpdf(self, x):
         """
         Description
         -----------
-        Returns log pdf of the initial proposal, evaluated at x. 
+        Returns log pdf of the initial proposal, evaluated at x.
         """
         pass
         
     @abstractmethod
-    def rvs(size):
+    def rvs(self, size):
         """
         Description
         -----------
@@ -52,7 +52,7 @@ class Q0_Proposal():
         """
         pass
 
-class Q_Proposal():
+class Q_Base(ABC):
     """
     Description
     -----------
@@ -62,7 +62,7 @@ class Q_Proposal():
     """
 
     @abstractmethod
-    def logpdf(x, x_cond):
+    def logpdf(self, x, x_cond):
         """
         Description
         -----------
@@ -71,7 +71,7 @@ class Q_Proposal():
         pass
         
     @abstractmethod
-    def rvs(x_cond):
+    def rvs(self, x_cond):
         """
         Description
         -----------
@@ -80,7 +80,7 @@ class Q_Proposal():
         
         pass
         
-class L_Kernel():
+class L_Base(ABC):
     """
     Description
     -----------
@@ -90,7 +90,7 @@ class L_Kernel():
     """
         
     @abstractmethod
-    def logpdf(x, x_cond):
+    def logpdf(self, x, x_cond):
         """
         Description
         -----------
@@ -98,7 +98,7 @@ class L_Kernel():
         """
         pass       
 
-class SMC_BASE():
+class SMC():
 
     """
     Description
