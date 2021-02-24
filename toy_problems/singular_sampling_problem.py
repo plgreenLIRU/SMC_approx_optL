@@ -14,7 +14,7 @@ P.L.Green
 """
 
 # Dimension of problem
-D = 50
+D = 5
 
 class Target(Target_Base):
     """ Define target """
@@ -81,15 +81,19 @@ l = L()
 
 # No. samples and iterations
 N = 1000
-K = 100
+K = 3
 
 # Standard SMC sampler
 smc = SMC(N, D, p, q0, K, q, l)
 smc.generate_samples()
 
-# SMC sampler with singular sampling scheme
+# Standard SMC sampler with singular sampling scheme
 smc_sin = SMC(N, D, p, q0, K, q_1d, l_1d, sampling='singular')
 smc_sin.generate_samples()
+
+# OptL SMC sampler with singular sampling scheme
+smc_sin_optL = SMC_OPT(N, D, p, q0, K, q_1d, sampling='singular')
+smc_sin_optL.generate_samples()
 
 # Plots of estimated mean
 fig, ax = plt.subplots()
@@ -97,6 +101,7 @@ ax.plot(np.repeat(2, K), 'lime', linewidth=3.0, label='True value')
 for d in range(D):
     ax.plot(smc.mean_estimate_EES[:, d], 'k')
     ax.plot(smc_sin.mean_estimate_EES[:, d], 'r')
+    ax.plot(smc_sin_optL.mean_estimate_EES[:, d], 'b')
 plt.tight_layout()
 
 # Plot of effective sample size (overview and close-up)
@@ -104,6 +109,7 @@ fig, ax = plt.subplots(nrows=2, ncols=1)
 for i in range(2):
     ax[i].plot(smc.Neff / smc.N, 'k')
     ax[i].plot(smc_sin.Neff / smc_sin.N, 'r')
+    ax[i].plot(smc_sin_optL.Neff / smc_sin_optL.N, 'b')
     ax[i].set_xlabel('Iteration')
     ax[i].set_ylabel('$N_{eff} / N$')
     if i == 0:

@@ -10,20 +10,20 @@ P.L.Green
 """
 
 class L(L_Base):
-    
+
     def logpdf(self, x, x_cond):
         pass
 
 
 class SMC_OPT(SMC):
 
-    def __init__(self, N, D, p, q0, K, q):
+    def __init__(self, N, D, p, q0, K, q, sampling='batch'):
         """ Initialiser class method
 
         """
 
         # Initiate standard SMC sampler but with no L-kernel defined
-        super().__init__(N, D, p, q0, K, q, L=L())
+        super().__init__(N, D, p, q0, K, q, L(), sampling)
 
     def find_optL(self, x, x_new):
         """ Generate a Gaussian approximation of the optimum L-kernel.
@@ -32,6 +32,12 @@ class SMC_OPT(SMC):
 
         # Collect x and x_new together into X
         X = np.hstack([x, x_new])
+        
+        # Appropriate dimension depends on sampling scheme
+        if self.sampling == 'batch':
+            D = self.D
+        if self.sampling == 'singular':
+            D = 2
 
         # Directly estimate the mean and
         # covariance matrix of X
@@ -39,16 +45,16 @@ class SMC_OPT(SMC):
         Sigma_X = np.cov(np.transpose(X))
 
         # Find mean of joint distribution (p(x, x_new))
-        mu_x, mu_xnew = mu_X[0:self.D], mu_X[self.D:2 * self.D]
+        mu_x, mu_xnew = mu_X[0:D], mu_X[D:2 * D]
 
         # Find covariance matrix of joint distribution (p(x, x_new))
         (Sigma_x_x,
          Sigma_x_xnew,
          Sigma_xnew_x,
-         Sigma_xnew_xnew) = (Sigma_X[0:self.D, 0:self.D],
-                             Sigma_X[0:self.D, self.D:2 * self.D],
-                             Sigma_X[self.D:2 * self.D, 0:self.D],
-                             Sigma_X[self.D:2 * self.D, self.D:2 * self.D])
+         Sigma_xnew_xnew) = (Sigma_X[0:D, 0:D],
+                             Sigma_X[0:D, D:2 * D],
+                             Sigma_X[D:2 * D, 0:D],
+                             Sigma_X[D:2 * D, D:2 * D])
 
         # Define new L-kernel
         def L_logpdf(x, x_cond):
@@ -76,7 +82,8 @@ class SMC_OPT(SMC):
 
         self.L.logpdf = L_logpdf
 
-    def update_weights(self, x, x_new, logw, p_log_pdf_x, p_log_pdf_x_new):
+    def update_weights(self, x, x_new, logw, p_logpdf_x,
+                       p_logpdf_x_new, d=None):
         """ Overwrites the method in the base-class
 
         """
@@ -84,16 +91,30 @@ class SMC_OPT(SMC):
         # Initialise arrays
         logw_new = np.vstack(np.zeros(self.N))
 
-        # Find approximation of the optimum L-kernel
-        self.find_optL(x, x_new)
-
         # Find new weights
-        for i in range(self.N):
+        if self.sampling == 'batch':
 
-            logw_new[i] = (logw[i] +
-                           p_log_pdf_x_new[i] -
-                           p_log_pdf_x[i] +
-                           self.L.logpdf(x=x[i], x_cond=x_new[i]) -
-                           self.q.logpdf(x=x_new[i], x_cond=x[i]))
+            # Find approximation of the optimum L-kernel
+            self.find_optL(x, x_new)
+
+            for i in range(self.N):
+                logw_new[i] = (logw[i] +
+                               p_logpdf_x_new[i] -
+                               p_logpdf_x[i] +
+                               self.L.logpdf(x[i], x_new[i]) -
+                               self.q.logpdf(x_new[i], x[i]))
+        if self.sampling == 'singular':
+
+
+            # Find approximation of the optimum L-kernel
+            self.find_optL(np.vstack(x[:, d]), 
+                           np.vstack(x_new[:, d]))
+
+            for i in range(self.N):
+                logw_new[i] = (logw[i] +
+                               p_logpdf_x_new[i] -
+                               p_logpdf_x[i] +
+                               self.L.logpdf(x[i, d], x_new[i, d]) -
+                               self.q.logpdf(x_new[i, d], x[i, d]))
 
         return logw_new
