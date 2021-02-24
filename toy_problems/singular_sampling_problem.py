@@ -14,7 +14,7 @@ P.L.Green
 """
 
 # Dimension of problem
-D = 1
+D = 50
 
 class Target(Target_Base):
     """ Define target """
@@ -40,7 +40,7 @@ class Q0(Q0_Base):
         return self.pdf.rvs(size)
 
 
-class Q(Q_Base):
+class Q_1D(Q_Base):
     """ Define general (1D) proposal """
 
     def logpdf(self, x, x_cond):
@@ -50,28 +50,45 @@ class Q(Q_Base):
         return x_cond + np.random.randn(1)
 
 
-class L(L_Base):
+class L_1D(L_Base):
     """ Define (1D) L-kernel """
 
     def logpdf(self, x, x_cond):
         return -0.5 * (x - x_cond)**2
 
+class Q(Q_Base):
+    """ Define general proposal """
+    
+    def logpdf(self, x, x_cond):
+        return  -0.5 * (x - x_cond).T @ (x - x_cond)
+        
+    def rvs(self, x_cond):
+        return x_cond + np.random.randn(D)
+
+
+class L(L_Base):
+    """ Define L-kernel """
+    
+    def logpdf(self, x, x_cond):
+        return -0.5 * (x - x_cond).T @ (x - x_cond)
 
 p = Target()
 q0 = Q0()
+q_1d = Q_1D()
+l_1d = L_1D()
 q = Q()
 l = L()
 
 # No. samples and iterations
 N = 1000
-K = 500
+K = 100
 
 # Standard SMC sampler
 smc = SMC(N, D, p, q0, K, q, l)
 smc.generate_samples()
 
 # SMC sampler with singular sampling scheme
-smc_sin = SMC(N, D, p, q0, K, q, l, sampling='singular')
+smc_sin = SMC(N, D, p, q0, K, q_1d, l_1d, sampling='singular')
 smc_sin.generate_samples()
 
 # Plots of estimated mean
@@ -81,5 +98,21 @@ for d in range(D):
     ax.plot(smc.mean_estimate_EES[:, d], 'k')
     ax.plot(smc_sin.mean_estimate_EES[:, d], 'r')
 plt.tight_layout()
+
+# Plot of effective sample size (overview and close-up)
+fig, ax = plt.subplots(nrows=2, ncols=1)
+for i in range(2):
+    ax[i].plot(smc.Neff / smc.N, 'k')
+    ax[i].plot(smc_sin.Neff / smc_sin.N, 'r')
+    ax[i].set_xlabel('Iteration')
+    ax[i].set_ylabel('$N_{eff} / N$')
+    if i == 0:
+        ax[i].set_title('(a)')
+        ax[i].legend(loc='upper left', bbox_to_anchor=(1, 1))
+    elif i == 1:
+        ax[i].set_title('(b)')
+        ax[i].set_xlim(0, 20)
+    ax[i].set_ylim(0, 1)
+##plt.tight_layout()
 
 plt.show()
