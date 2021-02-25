@@ -384,7 +384,7 @@ class SMC():
                         [x_new,
                          p_logpdf_x_new,
                          wn] = self.resample(x_new, p_logpdf_x_new, wn)
-                        logw = np.log(wn)
+                        logw_new = np.log(wn)
 
                     # Update samples, log weights, and posterior evaluations
                     x = np.copy(x_new)
