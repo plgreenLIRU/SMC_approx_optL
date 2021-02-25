@@ -17,7 +17,7 @@ P.L.Green
 D = 10
 
 # Variance of general proposal
-v = 0.5
+v = 1
 
 class Target(Target_Base):
     """ Define target """
@@ -84,7 +84,7 @@ l = L()
 
 # No. samples and iterations
 N = 1000
-K = 50
+K = 5
 
 # Standard SMC sampler
 smc = SMC(N, D, p, q0, K, q, l)
@@ -99,29 +99,37 @@ smc_sin_optL = SMC_OPT(N, D, p, q0, K, q_1d, sampling='singular')
 smc_sin_optL.generate_samples()
 
 # Plots of estimated mean
-fig, ax = plt.subplots()
-ax.plot(np.repeat(2, K), 'lime', linewidth=3.0, label='True value')
-for d in range(D):
-    ax.plot(smc.mean_estimate_EES[:, d], 'k')
-    ax.plot(smc_sin.mean_estimate_EES[:, d], 'r')
-    ax.plot(smc_sin_optL.mean_estimate_EES[:, d], 'b')
+fig, ax = plt.subplots(ncols=3)
+for i in range(3):
+    for d in range(D):
+        if i == 0:
+            ax[i].plot(smc.mean_estimate_EES[:, d], 'k', 
+                       alpha=0.5)
+        if i == 1:
+            ax[i].plot(smc_sin.mean_estimate_EES[:, d], 'r', 
+                       alpha=0.5)
+        if i == 2:
+            ax[i].plot(smc_sin_optL.mean_estimate_EES[:, d], 'b', 
+                       alpha=0.5)
+    ax[i].plot(np.repeat(2, K), 'lime', linewidth=3.0, 
+               linestyle='--')
+    ax[i].set_ylim([-1, 4])
+ax[1].set_xlabel('Iteration')
+ax[0].set_ylabel('E[$x$]')
 plt.tight_layout()
 
 # Plot of effective sample size (overview and close-up)
-fig, ax = plt.subplots(nrows=2, ncols=1)
-for i in range(2):
-    ax[i].plot(smc.Neff / smc.N, 'k')
-    ax[i].plot(smc_sin.Neff / smc_sin.N, 'r')
-    ax[i].plot(smc_sin_optL.Neff / smc_sin_optL.N, 'b')
-    ax[i].set_xlabel('Iteration')
-    ax[i].set_ylabel('$N_{eff} / N$')
-    if i == 0:
-        ax[i].set_title('(a)')
-        ##ax[i].legend(loc='upper left', bbox_to_anchor=(1, 1))
-    elif i == 1:
-        ax[i].set_title('(b)')
-        ax[i].set_xlim(0, 20)
-    ax[i].set_ylim(0, 1)
+fig, ax = plt.subplots()
+ax.plot(smc.Neff / smc.N, 'k', 
+        label='Forward proposal L-kernel')
+ax.plot(smc_sin.Neff / smc_sin.N, 'r', 
+        label='Forward proposal L-kernel (Gibbs)')
+ax.plot(smc_sin_optL.Neff / smc_sin_optL.N, 'b', 
+        label='Optimal L-kernel (Gibbs)')
+ax.set_xlabel('Iteration')
+ax.set_ylabel('$N_{eff} / N$')
+ax.set_ylim([0, 1.1])
+ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
 plt.tight_layout()
 
 plt.show()
