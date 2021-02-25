@@ -8,16 +8,13 @@ from SMC_OPT import *
 
 """
 Estimating the optimum L-kernel for a D-dimensional toy problem using the
-singular sampling approach.
+Gibbs proposal approach.
 
 P.L.Green
 """
 
 # Dimension of problem
 D = 10
-
-# Variance of general proposal
-v = 1
 
 class Target(Target_Base):
     """ Define target """
@@ -47,33 +44,33 @@ class Q_1D(Q_Base):
     """ Define general (1D) proposal """
 
     def logpdf(self, x, x_cond):
-        return  -1/(2 * v) * (x - x_cond)**2
+        return  -0.5 * (x - x_cond)**2
 
     def rvs(self, x_cond):
-        return x_cond + np.sqrt(v) * np.random.randn(1)
+        return x_cond + np.random.randn(1)
 
 
 class L_1D(L_Base):
     """ Define (1D) L-kernel """
 
     def logpdf(self, x, x_cond):
-        return  -1/(2 * v) * (x - x_cond)**2
+        return  -0.5 * (x - x_cond)**2
 
 class Q(Q_Base):
     """ Define general proposal """
     
     def logpdf(self, x, x_cond):
-        return  -1/(2 * v) * (x - x_cond).T @ (x - x_cond)
+        return  -0.5 * (x - x_cond).T @ (x - x_cond)
         
     def rvs(self, x_cond):
-        return x_cond + np.sqrt(v) * np.random.randn(D)
+        return x_cond + np.random.randn(D)
 
 
 class L(L_Base):
     """ Define L-kernel """
     
     def logpdf(self, x, x_cond):
-        return  -1/(2 * v) * (x - x_cond).T @ (x - x_cond)
+        return  -0.5 * (x - x_cond).T @ (x - x_cond)
 
 p = Target()
 q0 = Q0()
