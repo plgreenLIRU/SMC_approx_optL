@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import sys
 sys.path.append('..')  # noqa
 from scipy.stats import multivariate_normal as Normal_PDF
-from SMC_BASE import SMC, Target_Base, Q0_Base, Q_Base, L_Base
+from SMC_BASE import Target_Base, Q0_Base, Q_Base, L_Base
 from SMC_OPT import *
 
 """
@@ -65,48 +65,33 @@ class Q(Q_Base):
     def rvs(self, x_cond):
         return x_cond + np.random.randn(D)
 
-
-class L(L_Base):
-    """ Define L-kernel """
-    
-    def logpdf(self, x, x_cond):
-        return  -0.5 * (x - x_cond).T @ (x - x_cond)
-
 p = Target()
 q0 = Q0()
 q_1d = Q_1D()
 l_1d = L_1D()
 q = Q()
-l = L()
 
 # No. samples and iterations
-N = 1000
-K = 5
+N = 10
+K = 50
 
-# Standard SMC sampler
-smc = SMC(N, D, p, q0, K, q, l)
-smc.generate_samples()
-
-# Standard SMC sampler with singular sampling scheme
-smc_sin = SMC(N, D, p, q0, K, q_1d, l_1d, sampling='singular')
-smc_sin.generate_samples()
+# OptL SMC sampler with batch sampling scheme
+smc_optL = SMC_OPT(N, D, p, q0, K, q, sampling='batch')
+smc_optL.generate_samples()
 
 # OptL SMC sampler with singular sampling scheme
 smc_sin_optL = SMC_OPT(N, D, p, q0, K, q_1d, sampling='singular')
 smc_sin_optL.generate_samples()
 
 # Plots of estimated mean
-fig, ax = plt.subplots(ncols=3)
-for i in range(3):
+fig, ax = plt.subplots(ncols=2)
+for i in range(2):
     for d in range(D):
         if i == 0:
-            ax[i].plot(smc.mean_estimate_EES[:, d], 'k', 
+            ax[i].plot(smc_optL.mean_estimate_EES[:, d], 'k', 
                        alpha=0.5)
         if i == 1:
-            ax[i].plot(smc_sin.mean_estimate_EES[:, d], 'r', 
-                       alpha=0.5)
-        if i == 2:
-            ax[i].plot(smc_sin_optL.mean_estimate_EES[:, d], 'b', 
+            ax[i].plot(smc_sin_optL.mean_estimate_EES[:, d], 'r', 
                        alpha=0.5)
     ax[i].plot(np.repeat(2, K), 'lime', linewidth=3.0, 
                linestyle='--')
@@ -117,11 +102,9 @@ plt.tight_layout()
 
 # Plot of effective sample size (overview and close-up)
 fig, ax = plt.subplots()
-ax.plot(smc.Neff / smc.N, 'k', 
-        label='Forward proposal L-kernel')
-ax.plot(smc_sin.Neff / smc_sin.N, 'r', 
-        label='Forward proposal L-kernel (Gibbs)')
-ax.plot(smc_sin_optL.Neff / smc_sin_optL.N, 'b', 
+ax.plot(smc_optL.Neff / smc_optL.N, 'k', 
+        label='Optimal L-kernel')
+ax.plot(smc_sin_optL.Neff / smc_sin_optL.N, 'r', 
         label='Optimal L-kernel (Gibbs)')
 ax.set_xlabel('Iteration')
 ax.set_ylabel('$N_{eff} / N$')
