@@ -66,6 +66,9 @@ class SMC_OPT(SMC):
             # Variance of approximately optimal L-kernel
             Sigma = (Sigma_x_x - Sigma_x_xnew @
                      np.linalg.inv(Sigma_xnew_xnew) @ Sigma_xnew_x)
+                     
+            # Add ridge to avoid singularities
+            Sigma += np.eye(D) * 1e-6
 
             # Log det covariance matrix
             sign, logdet = np.linalg.slogdet(Sigma)
