@@ -321,17 +321,19 @@ class SMC():
                 self.var_estimate_EES[self.k] += (lmbda[k_dash] *
                                                   self.var_estimate[k_dash])
 
-            # Resample if effective sample size is below threshold
+            # Record effective sample size at kth iteration 
             self.Neff[self.k] = 1 / np.sum(np.square(wn))
-            if self.Neff[self.k] < self.N/2:
-
-                self.resampling_points = np.append(self.resampling_points,
-                                                   self.k)
-                x, p_logpdf_x, wn = self.resample(x, p_logpdf_x, wn)
-                logw = np.log(wn)
 
             # Generate new samples
             if self.sampling == 'batch':
+
+                # Resample if effective sample size is below threshold
+                if self.Neff[self.k] < self.N/2:
+
+                    self.resampling_points = np.append(self.resampling_points,
+                                                       self.k)
+                    x, p_logpdf_x, wn = self.resample(x, p_logpdf_x, wn)
+                    logw = np.log(wn)
 
                 # If we are using a batched sampling approach, we
                 # propose new samples, across all dimensions
