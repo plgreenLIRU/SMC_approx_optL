@@ -32,11 +32,11 @@ class SMC_OPT(SMC):
 
         # Collect x and x_new together into X
         X = np.hstack([x, x_new])
-        
+
         # Appropriate dimension depends on sampling scheme
         if self.sampling == 'batch':
             D = self.D
-        if self.sampling == 'singular':
+        if self.sampling == 'Gibbs':
             D = 2
 
         # Directly estimate the mean and
@@ -66,7 +66,7 @@ class SMC_OPT(SMC):
             # Variance of approximately optimal L-kernel
             Sigma = (Sigma_x_x - Sigma_x_xnew @
                      np.linalg.inv(Sigma_xnew_xnew) @ Sigma_xnew_x)
-                     
+
             # Add ridge to avoid singularities
             Sigma += np.eye(D) * 1e-6
 
@@ -106,11 +106,11 @@ class SMC_OPT(SMC):
                                p_logpdf_x[i] +
                                self.L.logpdf(x[i], x_new[i]) -
                                self.q.logpdf(x_new[i], x[i]))
-        if self.sampling == 'singular':
+        if self.sampling == 'Gibbs':
 
 
             # Find approximation of the optimum L-kernel
-            self.find_optL(np.vstack(x[:, d]), 
+            self.find_optL(np.vstack(x[:, d]),
                            np.vstack(x_new[:, d]))
 
             for i in range(self.N):

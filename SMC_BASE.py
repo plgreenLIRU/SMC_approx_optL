@@ -119,9 +119,9 @@ class SMC():
     q : general proposal distribution instance
 
     L : L-kernel instance
-    
-    sampling : 'batch' or 'singular' approach (where singular should
-        be better for high dimensional problems). 
+
+    sampling : 'batch' or 'Gibbs' approach (where Gibbs should
+        be better for high dimensional problems).
 
     Methods
     -------
@@ -321,7 +321,7 @@ class SMC():
                 self.var_estimate_EES[self.k] += (lmbda[k_dash] *
                                                   self.var_estimate[k_dash])
 
-            # Record effective sample size at kth iteration 
+            # Record effective sample size at kth iteration
             self.Neff[self.k] = 1 / np.sum(np.square(wn))
 
             # Generate new samples
@@ -360,7 +360,7 @@ class SMC():
                 logw = np.copy(logw_new)
                 p_logpdf_x = np.copy(p_logpdf_x_new)
 
-            if self.sampling == 'singular':
+            if self.sampling == 'Gibbs':
 
                 # Loop to update one dimension at a time
                 for d in range(self.D):
@@ -416,9 +416,9 @@ class SMC():
         p_logpdf_x : log target evaluations associated with x
 
         p_logpdf_x_new : log target evaluations associated with x_new
-        
-        d : current dimension we are updating (only needed if singular
-            sampling is being used). 
+
+        d : current dimension we are updating (only needed if Gibbs
+            sampling is being used).
 
         Returns
         -------
@@ -437,7 +437,7 @@ class SMC():
                                p_logpdf_x[i] +
                                self.L.logpdf(x[i], x_new[i]) -
                                self.q.logpdf(x_new[i], x[i]))
-        if self.sampling == 'singular':
+        if self.sampling == 'Gibbs':
             for i in range(self.N):
                 logw_new[i] = (logw[i] +
                                p_logpdf_x_new[i] -
