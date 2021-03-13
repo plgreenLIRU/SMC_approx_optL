@@ -1,5 +1,4 @@
 import numpy as np
-import copy
 from abc import abstractmethod, ABC
 
 class Target_Base(ABC):
@@ -7,8 +6,8 @@ class Target_Base(ABC):
     Description
     -----------
     This shows the methods that user will need to define to specify
-    the target distribution. 
-    
+    the target distribution.
+
     """
 
     @abstractmethod
@@ -16,8 +15,8 @@ class Target_Base(ABC):
         """
         Description
         -----------
-        Returns log pdf of the target distribution, evaluated at x. 
-                
+        Returns log pdf of the target distribution, evaluated at x.
+
         """
         pass
 
@@ -26,10 +25,10 @@ class Q0_Base(ABC):
     Description
     -----------
     This shows the methods that user will need to define to specify
-    the initial proposal distribution. 
-    
+    the initial proposal distribution.
+
     """
-    
+
     @abstractmethod
     def logpdf(self, x):
         """
@@ -38,14 +37,14 @@ class Q0_Base(ABC):
         Returns log pdf of the initial proposal, evaluated at x.
         """
         pass
-        
+
     @abstractmethod
     def rvs(self, size):
         """
         Description
         -----------
         Returns samples from the initial proposal.
-        
+
         Parameters
         ----------
         size : size of the sample being returned
@@ -57,8 +56,8 @@ class Q_Base(ABC):
     Description
     -----------
     This shows the methods that user will need to define to specify
-    the general proposal distribution. 
-    
+    the general proposal distribution.
+
     """
 
     @abstractmethod
@@ -69,7 +68,7 @@ class Q_Base(ABC):
         Returns log q(x | x_cond)
         """
         pass
-        
+
     @abstractmethod
     def rvs(self, x_cond):
         """
@@ -77,18 +76,18 @@ class Q_Base(ABC):
         -----------
         Returns a single sample from the proposal, q(x | x_cond).
         """
-        
+
         pass
-        
+
 class L_Base(ABC):
     """
     Description
     -----------
     This shows the methods that user will need to define to specify
-    the L-kernel.  
-    
+    the L-kernel.
+
     """
-        
+
     @abstractmethod
     def logpdf(self, x, x_cond):
         """
@@ -96,7 +95,7 @@ class L_Base(ABC):
         -----------
         Returns log L(x | x_cond)
         """
-        pass       
+        pass
 
 class SMC():
 
@@ -104,47 +103,50 @@ class SMC():
     Description
     -----------
     A base class for an SMC sampler.
-    
+
     Parameters
     ----------
     N : no. of samples generated at each iteration
-    
+
     D : dimension of the target distribution
-    
+
     p : target distribution instance
-    
+
     q0 : initial proposal instance
-    
+
     K : no. iterations to run
-    
+
     q : general proposal distribution instance
-    
+
     L : L-kernel instance
-    
+
+    sampling : 'batch' or 'single_step' approach (where single_step should
+        be better for high dimensional problems).
+
     Methods
     -------
     normalise_weights : normalises importance sampling weights
-    
+
     resample : resamples from normalised importance weights
-    
-    estimate : realise importance sampling estimates of mean and 
-        covariance matrix of the target. 
-        
-    generate_samples : runs the SMC sampler to generate weighted 
-        samples from the target. 
-        
+
+    estimate : realise importance sampling estimates of mean and
+        covariance matrix of the target.
+
+    generate_samples : runs the SMC sampler to generate weighted
+        samples from the target.
+
     propose_sample : proposes new samples, could probably remove in the
-        future. 
-        
+        future.
+
     update_weights : updates the log weight associated with each sample
-        i.e. evaluates the incremental weights. 
+        i.e. evaluates the incremental weights.
 
     Author
     ------
     P.L.Green
     """
 
-    def __init__(self, N, D, p, q0, K, q, L):
+    def __init__(self, N, D, p, q0, K, q, L, sampling='batch'):
 
         # Assign variables to self
         self.N = N
@@ -154,21 +156,22 @@ class SMC():
         self.K = K
         self.q = q
         self.L = L
+        self.sampling = sampling
 
     def normalise_weights(self, logw):
-        """ 
+        """
         Description
         -----------
         Normalise importance weights. Note that we remove the mean here
-            just to avoid numerical errors in evaluating the exponential. 
+            just to avoid numerical errors in evaluating the exponential.
             We have to be careful with -inf values in the log weights
             sometimes. This can happen if we are sampling from a pdf with
             zero probability regions, for example.
-            
+
         Parameters
         ----------
         logw : array of logged importance weights
-        
+
         Returns
         -------
         wn : array of normalised weights
@@ -183,14 +186,14 @@ class SMC():
 
         # Find standard weights
         w = np.exp(logw)
-        
+
         # Find normalised weights
         wn = w / np.sum(w)
 
         return wn
 
     def resample(self, x, p_logpdf_x, wn):
-        """ 
+        """
         Description
         -----------
         Resample given normalised weights.
@@ -198,19 +201,19 @@ class SMC():
         Parameters
         ----------
         x : array of current samples
-        
+
         p_logpdf_x : array of current target evaluations.
-        
+
         wn : array or normalised weights
-        
+
         Returns
         -------
         x_new : resampled values of x
-        
+
         p_logpdf_x_new : log pdfs associated with x_new
-        
+
         wn_new : normalised weights associated with x_new
-        
+
         """
 
         i = np.linspace(0, self.N-1, self.N, dtype=int)  # Sample positions
@@ -224,22 +227,22 @@ class SMC():
         return x_new, p_logpdf_x_new, wn_new
 
     def estimate(self, x, wn):
-        """ 
+        """
         Description
         -----------
-        Estimate some quantities of interest (just mean and covariance 
+        Estimate some quantities of interest (just mean and covariance
             matrix for now).
-            
+
         Parameters
         ----------
         x : samples from the target
-        
+
         wn : normalised weights associated with the target
-        
+
         Returns
         -------
         m : estimated mean
-        
+
         v : estimated covariance matrix
 
         """
@@ -262,7 +265,7 @@ class SMC():
 
     def generate_samples(self):
 
-        """ 
+        """
         Description
         -----------
         Run SMC sampler to generate weighted samples from the target.
@@ -318,84 +321,105 @@ class SMC():
                 self.var_estimate_EES[self.k] += (lmbda[k_dash] *
                                                   self.var_estimate[k_dash])
 
-            # Resample if effective sample size is below threshold
+            # Record effective sample size at kth iteration
             self.Neff[self.k] = 1 / np.sum(np.square(wn))
-            if self.Neff[self.k] < self.N/2:
-
-                self.resampling_points = np.append(self.resampling_points,
-                                                   self.k)
-                x, p_logpdf_x, wn = self.resample(x, p_logpdf_x, wn)
-                logw = np.log(wn)
 
             # Generate new samples
-            for i in range(self.N):
-                x_new[i] = self.propose_sample(x_cond=x[i])
+            if self.sampling == 'batch':
 
-            # Make sure evaluations of likelihood are vectorised
-            p_logpdf_x_new = self.p.logpdf(x_new)
+                # Resample if effective sample size is below threshold
+                if self.Neff[self.k] < self.N/2:
 
-            # Update log weights
-            logw_new = self.update_weights(x, x_new, logw, p_logpdf_x,
-                                           p_logpdf_x_new)
+                    self.resampling_points = np.append(self.resampling_points,
+                                                       self.k)
+                    x, p_logpdf_x, wn = self.resample(x, p_logpdf_x, wn)
+                    logw = np.log(wn)
 
-            # Make sure that, if p.logpdf(x_new) is -inf, then logw_new
-            # will also be -inf. Otherwise it is returned as NaN.
-            for i in range(self.N):
-                if p_logpdf_x_new[i] == -np.inf:
-                    logw_new[i] = -np.inf
-                elif logw[i] == -np.inf:
-                    logw_new[i] = -np.inf
+                # If we are using a batched sampling approach, we
+                # propose new samples, across all dimensions
+                for i in range(self.N):
+                    x_new[i] = self.q.rvs(x_cond=x[i])
 
-            # Update samples, log weights, and posterior evaluations
-            x = np.copy(x_new)
-            logw = copy.deepcopy(logw_new)
-            p_logpdf_x = copy.deepcopy(p_logpdf_x_new)
+                # Make sure evaluations of likelihood are vectorised
+                p_logpdf_x_new = self.p.logpdf(x_new)
+
+                # Update log weights
+                logw_new = self.update_weights(x, x_new, logw, p_logpdf_x,
+                                               p_logpdf_x_new)
+
+                # Make sure that, if p.logpdf(x_new) is -inf, then logw_new
+                # will also be -inf. Otherwise it is returned as NaN.
+                for i in range(self.N):
+                    if p_logpdf_x_new[i] == -np.inf:
+                        logw_new[i] = -np.inf
+                    elif logw[i] == -np.inf:
+                        logw_new[i] = -np.inf
+
+                # Update samples, log weights, and posterior evaluations
+                x = np.copy(x_new)
+                logw = np.copy(logw_new)
+                p_logpdf_x = np.copy(p_logpdf_x_new)
+
+            if self.sampling == 'single_step':
+
+                # Loop to update one dimension at a time
+                for d in range(self.D):
+
+                    x_new = np.copy(x)
+                    for i in range(self.N):
+                        x_new[i, d] = self.q.rvs(x[i, d])
+
+                    # Make sure evaluations of likelihood are vectorised
+                    p_logpdf_x_new = self.p.logpdf(x_new)
+
+                    # Update log weights
+                    logw_new = self.update_weights(x, x_new, logw,
+                                                   p_logpdf_x,
+                                                   p_logpdf_x_new, d)
+
+                    # Find normalised weights
+                    wn = self.normalise_weights(logw_new)
+
+                    # Resample if effective sample size is below threshold
+                    Neff = 1 / np.sum(np.square(wn))
+                    if Neff < self.N/2:
+                        [x_new,
+                         p_logpdf_x_new,
+                         wn] = self.resample(x_new, p_logpdf_x_new, wn)
+                        logw_new = np.log(wn)
+
+                    # Update samples, log weights, and posterior evaluations
+                    x = np.copy(x_new)
+                    logw = np.copy(logw_new)
+                    p_logpdf_x = np.copy(p_logpdf_x_new)
 
         # Final quantities to be returned
         self.x = x
         self.logw = logw
 
-    def propose_sample(self, x_cond):
-        """ 
-        Description
-        -----------
-        Method used specifically to propose new samples, conditional on 
-            x_cond. Could probably remove this in the future. 
-        
-        Parameters
-        ----------
-        x_cond : conditional value of x
-        
-        Returns
-        -------
-        x_new : new sample
-
+    def update_weights(self, x, x_new, logw, p_logpdf_x,
+                       p_logpdf_x_new, d=None):
         """
-
-        # New sample
-        x_new = self.q.rvs(x_cond=x_cond)
-
-        return x_new
-
-    def update_weights(self, x, x_new, logw, p_logpdf_x, p_logpdf_x_new):
-        """ 
         Description
         -----------
-        Used to update the log weights of a new set of samples, using the 
+        Used to update the log weights of a new set of samples, using the
             weights of the samples from the previous iteration.
-            
+
         Parameters
         ----------
         x : samples from the previous iteration
-        
+
         x_new : samples from the current iteration
-        
+
         logw : low importance weights associated with x
-        
+
         p_logpdf_x : log target evaluations associated with x
-        
+
         p_logpdf_x_new : log target evaluations associated with x_new
-        
+
+        d : current dimension we are updating (only needed if single_step
+            sampling is being used).
+
         Returns
         -------
         logw_new : log weights associated with x_new
@@ -406,11 +430,19 @@ class SMC():
         logw_new = np.vstack(np.zeros(self.N))
 
         # Find new weights
-        for i in range(self.N):
-            logw_new[i] = (logw[i] +
-                           p_logpdf_x_new[i] -
-                           p_logpdf_x[i] +
-                           self.L.logpdf(x=x[i], x_cond=x_new[i]) -
-                           self.q.logpdf(x=x_new[i], x_cond=x[i]))
+        if self.sampling == 'batch':
+            for i in range(self.N):
+                logw_new[i] = (logw[i] +
+                               p_logpdf_x_new[i] -
+                               p_logpdf_x[i] +
+                               self.L.logpdf(x[i], x_new[i]) -
+                               self.q.logpdf(x_new[i], x[i]))
+        if self.sampling == 'single_step':
+            for i in range(self.N):
+                logw_new[i] = (logw[i] +
+                               p_logpdf_x_new[i] -
+                               p_logpdf_x[i] +
+                               self.L.logpdf(x[i, d], x_new[i, d]) -
+                               self.q.logpdf(x_new[i, d], x[i, d]))
 
         return logw_new
