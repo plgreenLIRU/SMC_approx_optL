@@ -14,7 +14,7 @@ P.L.Green
 """
 
 # Dimension of problem
-D = 10
+D = 50
 
 class Target(Target_Base):
     """ Define target """
@@ -72,8 +72,8 @@ l_1d = L_1D()
 q = Q()
 
 # No. samples and iterations
-N = 10
-K = 100
+N = 10000
+K = 10
 
 # OptL SMC sampler with batch sampling scheme
 smc_optL = SMC_OPT(N, D, p, q0, K, q, sampling='batch')
@@ -98,6 +98,27 @@ for i in range(2):
     ax[i].set_ylim([-2, 5])
     ax[i].set_xlabel('Iteration')
     ax[i].set_ylabel('E[$x$]')
+    if i == 0:
+        ax[i].set_title('(a)')
+    if i == 1:
+        ax[i].set_title('(b)')
+plt.tight_layout()
+
+# Plots of estimated diagonal elements of covariance matrix
+fig, ax = plt.subplots(ncols=2)
+for i in range(2):
+    for d in range(D):
+        if i == 0:
+            ax[i].plot(smc_optL.var_estimate_EES[:, d, d], 'k',
+                       alpha=0.5)
+        if i == 1:
+            ax[i].plot(smc_gib_optL.var_estimate_EES[:, d, d], 'r',
+                       alpha=0.5)
+    ax[i].plot(np.repeat(1, K), 'lime', linewidth=3.0,
+               linestyle='--')
+    ax[i].set_ylim([-2, 5])
+    ax[i].set_xlabel('Iteration')
+    ax[i].set_ylabel('Var[$x$]')
     if i == 0:
         ax[i].set_title('(a)')
     if i == 1:
