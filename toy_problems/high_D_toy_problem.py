@@ -14,7 +14,7 @@ P.L.Green
 """
 
 # Dimension of problem
-D = 100
+D = 10
 
 class Target(Target_Base):
     """ Define target """
@@ -72,7 +72,7 @@ l_1d = L_1D()
 q = Q()
 
 # No. samples and iterations
-N = 100
+N = 5000
 K = 10
 
 # OptL SMC sampler with batch sampling scheme
