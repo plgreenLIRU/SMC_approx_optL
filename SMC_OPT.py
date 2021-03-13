@@ -56,6 +56,9 @@ class SMC_OPT(SMC):
                              Sigma_X[D:2 * D, 0:D],
                              Sigma_X[D:2 * D, D:2 * D])
 
+        # Add ridge to Sigma_xnew_xnew
+        Sigma_xnew_xnew += np.eye(len(Sigma_xnew_xnew)) * 1e-6
+        
         # Define new L-kernel
         def L_logpdf(x, x_cond):
 
