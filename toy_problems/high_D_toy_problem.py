@@ -14,13 +14,13 @@ P.L.Green
 """
 
 # Dimension of problem
-D = 50
+D = 100
 
 class Target(Target_Base):
     """ Define target """
 
     def __init__(self):
-        self.pdf = Normal_PDF(mean=np.repeat(2, D), cov=np.eye(D))
+        self.pdf = Normal_PDF(mean=np.repeat(2, D), cov=0.1*np.eye(D))
 
     def logpdf(self, x):
         return self.pdf.logpdf(x)
@@ -114,9 +114,9 @@ for i in range(2):
         if i == 1:
             ax[i].plot(smc_gib_optL.var_estimate_EES[:, d, d], 'r',
                        alpha=0.5)
-    ax[i].plot(np.repeat(1, K), 'lime', linewidth=3.0,
+    ax[i].plot(np.repeat(0.1, K), 'lime', linewidth=3.0,
                linestyle='--')
-    ax[i].set_ylim([-2, 5])
+    ax[i].set_ylim([0, 0.5])
     ax[i].set_xlabel('Iteration')
     ax[i].set_ylabel('Var[$x$]')
     if i == 0:
@@ -130,7 +130,7 @@ fig, ax = plt.subplots()
 ax.plot(smc_optL.Neff / smc_optL.N, 'k',
         label='Optimal L-kernel (batch)')
 ax.plot(smc_gib_optL.Neff / smc_gib_optL.N, 'r',
-        label='Optimal L-kernel (Gibbs)')
+        label='Optimal L-kernel (single step)')
 ax.set_xlabel('Iteration')
 ax.set_ylabel('$N_{eff} / N$')
 ax.set_ylim([0, 1.1])
