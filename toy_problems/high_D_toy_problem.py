@@ -72,7 +72,7 @@ l_1d = L_1D()
 q = Q()
 
 # No. samples and iterations
-N = 10000
+N = 100
 K = 10
 
 # OptL SMC sampler with batch sampling scheme
@@ -125,12 +125,12 @@ for i in range(2):
         ax[i].set_title('(b)')
 plt.tight_layout()
 
-# Plot of effective sample size (overview and close-up)
+# Plot of effective sample size
 fig, ax = plt.subplots()
 ax.plot(smc_optL.Neff / smc_optL.N, 'k',
         label='Optimal L-kernel (batch)')
 ax.plot(smc_gib_optL.Neff / smc_gib_optL.N, 'r',
-        label='Optimal L-kernel (single_step)')
+        label='Optimal L-kernel (single step)')
 ax.set_xlabel('Iteration')
 ax.set_ylabel('$N_{eff} / N$')
 ax.set_ylim([0, 1.1])
