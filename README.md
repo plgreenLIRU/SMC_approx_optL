@@ -1,7 +1,7 @@
 Code accompanying the paper 
 
 # Increasing the efficiency of Sequential Monte Carlo samplers through the use of near-optimal L-kernels 
-# P. L. Green, R. E. Moore, R. J. Jackson, J. Li, S. Maskell
+# P. L. Green, L. J. Devlin, R. E. Moore, R. J. Jackson, J. Li, S. Maskell
 # University of Liverpool
 
 ## Code structure 
