@@ -8,7 +8,7 @@ from SMC_OPT import *
 
 """
 Estimating the optimum L-kernel for a D-dimensional toy problem using the
-Gibbs proposal approach.
+single_step proposal approach.
 
 P.L.Green
 """
@@ -72,15 +72,15 @@ l_1d = L_1D()
 q = Q()
 
 # No. samples and iterations
-N = 10000
+N = 100
 K = 10
 
 # OptL SMC sampler with batch sampling scheme
 smc_optL = SMC_OPT(N, D, p, q0, K, q, sampling='batch')
 smc_optL.generate_samples()
 
-# OptL SMC sampler with Gibbs sampling scheme
-smc_gib_optL = SMC_OPT(N, D, p, q0, K, q_1d, sampling='Gibbs')
+# OptL SMC sampler with single_step sampling scheme
+smc_gib_optL = SMC_OPT(N, D, p, q0, K, q_1d, sampling='single_step')
 smc_gib_optL.generate_samples()
 
 # Plots of estimated mean
@@ -125,7 +125,7 @@ for i in range(2):
         ax[i].set_title('(b)')
 plt.tight_layout()
 
-# Plot of effective sample size (overview and close-up)
+# Plot of effective sample size
 fig, ax = plt.subplots()
 ax.plot(smc_optL.Neff / smc_optL.N, 'k',
         label='Optimal L-kernel (batch)')

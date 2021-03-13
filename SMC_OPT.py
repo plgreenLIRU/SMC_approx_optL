@@ -36,7 +36,7 @@ class SMC_OPT(SMC):
         # Appropriate dimension depends on sampling scheme
         if self.sampling == 'batch':
             D = self.D
-        if self.sampling == 'Gibbs':
+        if self.sampling == 'single_step':
             D = 2
 
         # Directly estimate the mean and
@@ -109,7 +109,7 @@ class SMC_OPT(SMC):
                                p_logpdf_x[i] +
                                self.L.logpdf(x[i], x_new[i]) -
                                self.q.logpdf(x_new[i], x[i]))
-        if self.sampling == 'Gibbs':
+        if self.sampling == 'single_step':
 
 
             # Find approximation of the optimum L-kernel

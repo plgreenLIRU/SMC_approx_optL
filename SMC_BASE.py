@@ -120,7 +120,7 @@ class SMC():
 
     L : L-kernel instance
 
-    sampling : 'batch' or 'Gibbs' approach (where Gibbs should
+    sampling : 'batch' or 'single_step' approach (where single_step should
         be better for high dimensional problems).
 
     Methods
@@ -360,7 +360,7 @@ class SMC():
                 logw = np.copy(logw_new)
                 p_logpdf_x = np.copy(p_logpdf_x_new)
 
-            if self.sampling == 'Gibbs':
+            if self.sampling == 'single_step':
 
                 # Loop to update one dimension at a time
                 for d in range(self.D):
@@ -417,7 +417,7 @@ class SMC():
 
         p_logpdf_x_new : log target evaluations associated with x_new
 
-        d : current dimension we are updating (only needed if Gibbs
+        d : current dimension we are updating (only needed if single_step
             sampling is being used).
 
         Returns
@@ -437,7 +437,7 @@ class SMC():
                                p_logpdf_x[i] +
                                self.L.logpdf(x[i], x_new[i]) -
                                self.q.logpdf(x_new[i], x[i]))
-        if self.sampling == 'Gibbs':
+        if self.sampling == 'single_step':
             for i in range(self.N):
                 logw_new[i] = (logw[i] +
                                p_logpdf_x_new[i] -
