@@ -1,6 +1,5 @@
 import numpy as np
 import sys
-sys.path.append('..')  # noqa
 from SMC_BASE import SMC, Target_Base, Q0_Base, Q_Base, L_Base
 from SMC_OPT import *
 from scipy.stats import multivariate_normal as Normal_PDF
@@ -90,13 +89,8 @@ def test_sampler():
     assert np.allclose(smc_opt.var_estimate[-1][0][1], p.cov[0][1],
                        atol=0.2)
 
+    # We'd expect that, on average, our SMC with optimum L-kernel should
+    # maintain a higher effective sample size that our SMC sampler with a
+    # 'user defined' kernel.
 
-def test_Neff():
-    """ We'd expect that, on average, our SMC with optimum L-kernel should
-    maintain a higher effective sample size that our SMC sampler with a
-    'user defined' kernel.
-
-    """
-
-    smc.generate_samples()
     assert np.mean(smc_opt.Neff) > np.mean(smc.Neff)

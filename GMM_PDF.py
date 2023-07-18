@@ -50,7 +50,7 @@ class GMM_PDF():
         p = 0
         for c in range(self.n_components):
             if self.D == 1:
-                p += self.weights[c] * np.exp(-1 / (2*self.vars[c]) *
+                p += self.weights[c] * np.exp(-1 / (2 * self.vars[c]) *
                                               (x - self.means[c])**2)
             else:
                 pass

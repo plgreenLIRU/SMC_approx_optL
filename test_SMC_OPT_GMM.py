@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-sys.path.append('..')  # noqa
 from scipy.stats import multivariate_normal as Normal_PDF
 from GMM_PDF import *
 from SMC_BASE import SMC, Target_Base, Q0_Base, Q_Base, L_Base

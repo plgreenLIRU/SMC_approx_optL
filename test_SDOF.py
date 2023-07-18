@@ -1,7 +1,6 @@
 import numpy as np
 import sys
-sys.path.append('../SDOF_example')   # noqa
-sys.path.append('..')       # noqa
+sys.path.append('SDOF_example')   # noqa
 from SDOF_Class import SDOF
 from SDOF_Log_Posterior_Class import SDOF_Log_Posterior as LogP
 from scipy.stats import multivariate_normal as Normal_PDF
