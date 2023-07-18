@@ -181,12 +181,16 @@ class SMC():
         # Identify elements of logw that are not -inf
         indices = np.invert(np.isneginf(logw))
 
+        # Produce copy of logw, as we don't want the current method to alter
+        # logw itself
+        logw_copy = np.copy(logw)
+
         # Apply normalisation only to those elements of log that are not -inf
-        logw[indices] = logw[indices] - np.max(logw[indices])
+        logw_copy[indices] = logw_copy[indices] - np.max(logw_copy[indices])
 
         # Find standard weights
-        w = np.exp(logw)
-
+        w = np.exp(logw_copy)
+        
         # Find normalised weights
         wn = w / np.sum(w)
 

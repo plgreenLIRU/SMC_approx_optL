@@ -28,5 +28,7 @@ V4 : now uses abstract classes and random seed is fixed for tests.
 
 V5 : now includes the option for the single step sampling approach, which should help performance for higher dimensional problems. This approach was developed in response to reviewer comments about the first version of the paper. 
 
+V6 : fixes issue where calculation of the normalised weights was altering the log weights
+
 ## Contact
 Queries to: p.l.green@liverpool.ac.uk
