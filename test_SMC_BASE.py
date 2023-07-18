@@ -1,6 +1,5 @@
 import numpy as np
 import sys
-sys.path.append('..')  # noqa
 from SMC_BASE import SMC, Target_Base, Q0_Base, Q_Base, L_Base
 from scipy.stats import multivariate_normal as Normal_PDF
 
