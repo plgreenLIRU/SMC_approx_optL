@@ -9,5 +9,8 @@ __pycache__/
 *.blg
 *.out
 
-# Ignore visual studio settings
+# Ignore visual studio settings and test stuff
 .vs/
+TestResults/
+SMC_approx_optL.pyproj
+SMC_approx_optL.sln
