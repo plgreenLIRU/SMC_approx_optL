@@ -90,9 +90,20 @@ def test_normalise_weights():
 
     """
 
+    # Create some example log weights, and create a copy that we'll use later
+    # for tests
     logw = np.log(np.random.rand(1, N))
+    logw_copy = np.copy(logw)
+
+    # Extract normalised weights
     wn = smc.normalise_weights(logw)
+
+    # Check normalised weights add to 1
     assert np.allclose(np.sum(wn), 1.0, atol=1e-8)
 
+    # Check that the smc.normalise methods hasn't changed the log weights
+    assert np.allclose(logw, logw_copy)
+
+    # Insert a -inf into the log weights and check that it still works
     logw[0] = -np.inf
     assert np.allclose(np.sum(wn), 1.0, atol=1e-8)
