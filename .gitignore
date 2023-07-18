@@ -8,3 +8,6 @@ __pycache__/
 *.bbl
 *.blg
 *.out
+
+# Ignore visual studio settings
+.vs/
